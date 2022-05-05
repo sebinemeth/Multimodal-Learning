@@ -7,6 +7,8 @@ import math
 import functools
 import json
 import copy
+from tqdm import tqdm
+
 # from numpy.random import randint
 # import numpy as np
 # import random
@@ -16,6 +18,7 @@ import copy
 
 
 def pil_loader(path, modality):
+    print(path, modality)
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         # print(path)
@@ -45,6 +48,8 @@ def get_default_image_loader():
 
 
 def video_loader(video_dir_path, frame_indices, modality, sample_duration, image_loader):
+    video_dir_path = os.path.join(video_dir_path, "sk_color_all")
+
     video = []
     if modality == 'RGB':
         for i in frame_indices:
@@ -56,7 +61,6 @@ def video_loader(video_dir_path, frame_indices, modality, sample_duration, image
                 print(image_path, "------- Does not exist")
                 return video
     elif modality == 'Depth':
-
         for i in frame_indices:
             image_path = os.path.join(video_dir_path.replace('color', 'depth'), '{:05d}.jpg'.format(i))
             if os.path.exists(image_path):
@@ -65,10 +69,10 @@ def video_loader(video_dir_path, frame_indices, modality, sample_duration, image
                 print(image_path, "------- Does not exist")
                 return video
     elif modality == 'RGB-D':
-        for i in frame_indices:  # index 35 is used to change img to flow
-            image_path = os.path.join(video_dir_path, '{:05d}.jpg'.format(i))
+        for _i in frame_indices:  # index 35 is used to change img to flow
+            image_path = os.path.join(video_dir_path, '{:05d}.jpg'.format(_i))
 
-            image_path_depth = os.path.join(video_dir_path.replace('color', 'depth'), '{:05d}.jpg'.format(i))
+            image_path_depth = os.path.join(video_dir_path.replace('color', 'depth'), '{:05d}.jpg'.format(_i))
 
             image = image_loader(image_path, 'RGB')
             image_depth = image_loader(image_path_depth, 'Depth')
@@ -89,11 +93,24 @@ def get_default_video_loader():
 
 
 def get_lst_data(data_file_path):
-
+    video_names = list()
+    annotations = list()
 
     with open(data_file_path, 'r') as data_file:
         for line in data_file.readlines():
+            if len(line) == 0:
+                break
 
+            line = line.strip()
+            path, depth, color, duo_left, label = line.split(' ')
+            annotation = {"start_frame": depth.split(":")[-2],
+                          "end_frame": depth.split(":")[-1],
+                          "label": int(label.split(":")[-1]) - 1}
+
+            video_names.append(path.split(":")[-1])
+            annotations.append(annotation)
+
+    return video_names, annotations
 
 
 def load_annotation_data(data_file_path):
@@ -125,20 +142,21 @@ def get_video_names_and_annotations(data, subset):
     return video_names, annotations
 
 
-def make_dataset(root_path, annotation_path, subset, n_samples_for_each_video,
-                 sample_duration):
-    data = load_annotation_data(annotation_path)
-    video_names, annotations = get_video_names_and_annotations(data, subset)
-    class_to_idx = get_class_labels(data)
-    idx_to_class = {}
-    for name, label in class_to_idx.items():
-        idx_to_class[label] = name
+def make_dataset(root_path, annotation_path, subset, n_samples_for_each_video, sample_duration):
+    video_names, annotations = get_lst_data(annotation_path)
+
+    # data = load_annotation_data(annotation_path)
+    # video_names, annotations = get_video_names_and_annotations(data, subset)
+    # class_to_idx = get_class_labels(data)
+    # idx_to_class = {}
+    # for name, label in class_to_idx.items():
+    #     idx_to_class[label] = name
 
     dataset = []
     print("[INFO]: NV Dataset - " + subset + " is loading...")
-    for i in range(len(video_names)):
-        if i % 1000 == 0:
-            print('dataset loading [{}/{}]'.format(i, len(video_names)))
+    for i in tqdm(range(len(video_names))):
+        # if i % 100 == 0:
+        #     print('dataset loading [{}/{}]'.format(i, len(video_names)))
 
         video_path = os.path.join(root_path, video_names[i])
 
@@ -156,7 +174,8 @@ def make_dataset(root_path, annotation_path, subset, n_samples_for_each_video,
             'video_id': i
         }
         if len(annotations) != 0:
-            sample['label'] = class_to_idx[annotations[i]['label']]
+            # sample['label'] = class_to_idx[annotations[i]['label']]
+            sample['label'] = annotations[i]['label']
         else:
             sample['label'] = -1
 
@@ -172,11 +191,10 @@ def make_dataset(root_path, annotation_path, subset, n_samples_for_each_video,
                 step = sample_duration
             for j in range(1, n_frames, step):
                 sample_j = copy.deepcopy(sample)
-                sample_j['frame_indices'] = list(
-                    range(j, min(n_frames + 1, j + sample_duration)))
+                sample_j['frame_indices'] = list(range(j, min(n_frames + 1, j + sample_duration)))
                 dataset.append(sample_j)
 
-    return dataset, idx_to_class
+    return dataset
 
 
 class NV(data.Dataset):
@@ -207,9 +225,9 @@ class NV(data.Dataset):
                  sample_duration=16,
                  modality='RGB',
                  get_loader=get_default_video_loader):
-        self.data, self.class_names = make_dataset(
-            root_path, annotation_path, subset, n_samples_for_each_video,
-            sample_duration)
+        self.data = make_dataset(root_path, annotation_path, subset, n_samples_for_each_video, sample_duration)
+
+        # self.class_names = None
 
         self.spatial_transform = spatial_transform
         self.temporal_transform = temporal_transform
@@ -257,11 +275,24 @@ if __name__ == "__main__":
     _subset = "train"
 
     training_data = NV(
-                _video_path,
-                _train_annotation_path,
-                _subset,
-                # spatial_transform=spatial_transform,
-                # temporal_transform=temporal_transform,
-                # target_transform=target_transform,
-                # sample_duration=sample_duration,
-                modality="RGB-D")
+        _video_path,
+        _train_annotation_path,
+        _subset,
+        # spatial_transform=spatial_transform,
+        # temporal_transform=temporal_transform,
+        # target_transform=target_transform,
+        # sample_duration=sample_duration,
+        modality="RGB-D")
+
+    train_loader = torch.utils.data.DataLoader(
+        training_data,
+        batch_size=100,
+        shuffle=True,
+        num_workers=2,
+        pin_memory=True)
+
+    for i, (inputs, targets) in enumerate(train_loader):
+        print(inputs)
+        print(targets)
+        input()
+
