@@ -21,7 +21,7 @@ class Senz3dDataset(Dataset):
         """
         :param folders: list of all the video folders
         :param frames: start frame, end frame and skip frame numpy array
-        :param to_augment: boolean if the data is suppose to augment
+        :param to_augment: boolean if the data is supposed to augment
         :param transform: transform function
         :param mode: train/test
         """
@@ -64,7 +64,8 @@ class Senz3dDataset(Dataset):
         X = torch.stack(X, dim=1)
         return X
 
-    def read_label(self, path):
+    @staticmethod
+    def read_label(path):
         with open(path) as file:
             return int(file.read())
 
@@ -78,8 +79,12 @@ class Senz3dDataset(Dataset):
         # depth = self.read_depth(folder_name, self.transform).unsqueeze_(0) # (depth)
         depth = self.read_depth(folder_name, self.transform)
         # print(depth.shape)
-        label = self.read_label(os.path.join(folder_name, 'label.txt'))
+
+        # TODO
+        # label = self.read_label(os.path.join(folder_name, 'label.txt'))
+        label = int(folder_name.split('/')[-2][-1])
+
         # print(label)
         y = torch.LongTensor(label)
-        # return rgb, depth, y
-        return rgb, rgb, y
+        return rgb, depth, y
+        # return rgb, rgb, y
