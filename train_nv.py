@@ -235,7 +235,7 @@ def main():
         training_data,
         batch_size=10,
         shuffle=True,
-        num_workers=10,
+        num_workers=24,
         pin_memory=True)
 
     valid_data = NV(
