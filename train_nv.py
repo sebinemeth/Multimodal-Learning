@@ -39,7 +39,8 @@ depth_x, depth_y = 200, 200
 # Select which frame to begin & end in videos
 begin_frame, end_frame, skip_frame = 1, 8, 1
 n_epoch = 10
-num_classes = 25 + 1
+only_with_gesture = True
+num_classes = 25 if only_with_gesture else 25 + 1
 lr = 1e-4
 _lambda = 0.05  # 50 x 10^-3
 
@@ -229,7 +230,10 @@ def main():
         # temporal_transform=TemporalRandomCrop(sample_duration, downsample=1),
         # target_transform=target_transform,
         sample_duration=sample_duration,
-        modality="RGB-D")
+        modality="RGB-D",
+        only_with_gesture=only_with_gesture,
+        img_size=(img_x, img_y)
+    )
 
     train_loader = torch.utils.data.DataLoader(
         training_data,
@@ -248,7 +252,10 @@ def main():
         # temporal_transform=TemporalRandomCrop(sample_duration, downsample=1),
         # target_transform=target_transform,
         sample_duration=sample_duration,
-        modality="RGB-D")
+        modality="RGB-D",
+        only_with_gesture=only_with_gesture,
+        img_size=(img_x, img_y)
+    )
 
     valid_loader = torch.utils.data.DataLoader(
         valid_data,
