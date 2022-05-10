@@ -235,7 +235,7 @@ def main():
         training_data,
         batch_size=10,
         shuffle=True,
-        num_workers=24,
+        num_workers=10,
         pin_memory=True)
 
     valid_data = NV(
@@ -263,18 +263,20 @@ def main():
     # train_loader = data.DataLoader(train_rgb_set, pin_memory=True, batch_size=1)
     # valid_loader = data.DataLoader(test_rgb_set, pin_memory=True, batch_size=1)
 
-    model_rgb_cnn = CNN3D(t_dim=sample_duration, ch_in=3, img_x=img_x, img_y=img_y, num_classes=num_classes).to(device)
+    # model_rgb_cnn = CNN3D(t_dim=sample_duration, ch_in=3, img_x=img_x, img_y=img_y, num_classes=num_classes).to(device)
     #summary(model_rgb_cnn, input_size=(sample_duration * 3, img_y, img_x))
-    # model_rgb_cnn = I3D(num_classes=num_classes,
-    #                     modality='rgb',
-    #                     dropout_prob=0,
-    #                     name='inception').to(device)
-    model_depth_cnn = CNN3D(t_dim=sample_duration, ch_in=1, img_x=depth_x, img_y=depth_y, num_classes=num_classes).to(device)
+    model_rgb_cnn = I3D(num_classes=num_classes,
+                        modality='rgb',
+                        dropout_prob=0,
+                        name='inception').to(device)
+
+    # model_depth_cnn = CNN3D(t_dim=sample_duration, ch_in=1, img_x=depth_x, img_y=depth_y, num_classes=num_classes).to(device)
     #summary(model_depth_cnn, input_size=(sample_duration, img_y, img_x))
-    # model_depth_cnn = I3D(num_classes=num_classes,
-    #                       modality='rgb',
-    #                       dropout_prob=0,
-    #                       name='inception').to(device)
+    model_depth_cnn = I3D(num_classes=num_classes,
+                          modality='depth',
+                          dropout_prob=0,
+                          name='inception').to(device)
+
     optimizer_rgb = torch.optim.Adam(model_rgb_cnn.parameters(), lr=lr)  # optimize all cnn parameters
     optimizer_depth = torch.optim.Adam(model_depth_cnn.parameters(), lr=lr)  # optimize all cnn parameters
     criterion = torch.nn.CrossEntropyLoss()

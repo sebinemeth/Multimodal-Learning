@@ -172,6 +172,8 @@ class I3D(torch.nn.Module):
             in_channels = 3
         elif modality == 'flow':
             in_channels = 2
+        elif modality == 'depth':
+            in_channels = 1
         else:
             raise ValueError(
                 '{} not among known modalities [rgb|flow]'.format(modality))
@@ -300,6 +302,8 @@ class I3D(torch.nn.Module):
             prefix = 'RGB/inception_i3d'
         elif self.modality == 'flow':
             prefix = 'Flow/inception_i3d'
+        elif self.modality == 'depth':
+            prefix = 'Depth/inception_i3d'
         load_conv3d(state_dict, 'conv3d_1a_7x7', sess,
                     os.path.join(prefix, 'Conv3d_1a_7x7'))
         load_conv3d(state_dict, 'conv3d_2b_1x1', sess,
