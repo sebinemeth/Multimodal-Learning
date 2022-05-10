@@ -8,6 +8,7 @@ import functools
 import json
 import copy
 from tqdm import tqdm
+from glob import glob
 
 
 # from numpy.random import randint
@@ -110,23 +111,27 @@ def get_lst_data(data_file_path, root_path):
             line = line.strip()
             path, depth, color, duo_left, label = line.split(' ')
             path = path.split(":")[-1]
+            max_index_color = int(list(sorted(glob(os.path.join(root_path, path, "sk_color_all/*.jpg"))))[-1].split('/')[-1].split('.')[0])
+            max_index_depth = int(list(sorted(glob(os.path.join(root_path, path, "sk_depth_all/*.jpg"))))[-1].split('/')[-1].split('.')[0])
+            max_frame_idx = min(max_index_color, max_index_depth)
+            print(max_index_color, max_index_depth)
 
-            with open(os.path.join(root_path, path, "sk_color_log.txt"), 'r') as sk_color_log:
-                last_line_color = sk_color_log.readlines()[-1]
-                if len(last_line_color) == 0:
-                    last_line_color = sk_color_log.readlines()[-1]
-
-                assert len(last_line_color) != 0
-
-            with open(os.path.join(root_path, path, "sk_depth_log.txt"), 'r') as sk_depth_log:
-                last_line_depth = sk_depth_log.readlines()[-1]
-                if len(last_line_depth) == 0:
-                    last_line_depth = sk_depth_log.readlines()[-1]
-
-                assert len(last_line_depth) != 0
-
-            # indexing starts from 0
-            max_frame_idx = min(int(last_line_color[3:8]), int(last_line_depth[3:8]))
+            # with open(os.path.join(root_path, path, "sk_color_log.txt"), 'r') as sk_color_log:
+            #     last_line_color = sk_color_log.readlines()[-1]
+            #     if len(last_line_color) == 0:
+            #         last_line_color = sk_color_log.readlines()[-1]
+            #
+            #     assert len(last_line_color) != 0
+            #
+            # with open(os.path.join(root_path, path, "sk_depth_log.txt"), 'r') as sk_depth_log:
+            #     last_line_depth = sk_depth_log.readlines()[-1]
+            #     if len(last_line_depth) == 0:
+            #         last_line_depth = sk_depth_log.readlines()[-1]
+            #
+            #     assert len(last_line_depth) != 0
+            #
+            # # indexing starts from 0
+            # max_frame_idx = min(int(last_line_color[3:8]), int(last_line_depth[3:8]))
 
             annotation = {"start_frame": depth.split(":")[-2],
                           "end_frame": depth.split(":")[-1],
