@@ -235,7 +235,7 @@ def main():
         training_data,
         batch_size=10,
         shuffle=True,
-        num_workers=2,
+        num_workers=10,
         pin_memory=True)
 
     valid_data = NV(
@@ -252,9 +252,9 @@ def main():
 
     valid_loader = torch.utils.data.DataLoader(
         valid_data,
-        batch_size=10,
-        shuffle=True,
-        num_workers=2,
+        batch_size=8,
+        shuffle=False,
+        num_workers=10,
         pin_memory=True)
 
     # train_rgb_set = Senz3dDataset(train_videos_path, selected_frames, to_augment=False, mode='train')
