@@ -15,8 +15,10 @@ def validation(model_rgb: nn.Module, model_depth: nn.Module, criterion, valid_lo
             rgb, depth, y = rgb.to(device), depth.to(device), y.to(device)
             rgb_out, rgb_feature_map = model_rgb(rgb)
             depth_out, depth_feature_map = model_depth(depth)
-            loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
-            loss_depth = criterion(depth_out, torch.max(y, 1)[1])
+            # loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
+            # loss_depth = criterion(depth_out, torch.max(y, 1)[1])
+            loss_rgb = criterion(rgb_out, y)  # index of the max log-probability
+            loss_depth = criterion(depth_out, y)
             rgb_loss.append(loss_rgb.item())
             depth_loss.append(loss_depth.item())
         valid_rgb_loss = np.mean(rgb_loss)  # type: float

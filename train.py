@@ -54,6 +54,7 @@ def train(args,
     depth_regularized_losses = []
     train_result = {}
     valid_result = {}
+
     for batch_idx, (rgb, depth, y) in enumerate(train_loader):
         # distribute data to device
         rgb, depth, y = rgb.to(device), depth.to(device), y.to(device)
@@ -64,48 +65,48 @@ def train(args,
         rgb_out, rgb_feature_map = model_rgb(rgb)
         depth_out, depth_feature_map = model_depth(depth)
 
-        rgb_feature_map_T = torch.transpose(rgb_feature_map, 1, 2)
-        depth_feature_map_T = torch.transpose(depth_feature_map, 1, 2)
-        # print("RGB fmap shape :: {}".format(rgb_feature_map.shape))
-        # print("depth fmap shape :: {}".format(depth_feature_map.shape))
-        # torch.save(rgb_feature_map_T, "rgbFeatureMapT.pt")
-
-        rgb_sq_ft_map = rgb_feature_map_T.squeeze()
-        rgb_avg_sq_ft_map = torch.mean(rgb_sq_ft_map, 0)
-        depth_sq_ft_map = depth_feature_map_T.squeeze()
-        depth_avg_sq_ft_map = torch.mean(depth_sq_ft_map, 0)
-
-        rgb_corr = torch.mul(rgb_feature_map, rgb_feature_map_T)
-        depth_corr = torch.mul(depth_feature_map, depth_feature_map_T)
-        # print("RGB correlation ::  {}".format(rgb_corr.shape))
-        # print("depth correlation :: {}".format(depth_corr.shape))
-
+        # rgb_feature_map_T = torch.transpose(rgb_feature_map, 1, 2)
+        # depth_feature_map_T = torch.transpose(depth_feature_map, 1, 2)
+        # # print("RGB fmap shape :: {}".format(rgb_feature_map.shape))
+        # # print("depth fmap shape :: {}".format(depth_feature_map.shape))
+        # # torch.save(rgb_feature_map_T, "rgbFeatureMapT.pt")
+        #
+        # rgb_sq_ft_map = rgb_feature_map_T.squeeze()
+        # rgb_avg_sq_ft_map = torch.mean(rgb_sq_ft_map, 0)
+        # depth_sq_ft_map = depth_feature_map_T.squeeze()
+        # depth_avg_sq_ft_map = torch.mean(depth_sq_ft_map, 0)
+        #
+        # rgb_corr = torch.mul(rgb_feature_map, rgb_feature_map_T)
+        # depth_corr = torch.mul(depth_feature_map, depth_feature_map_T)
+        # # print("RGB correlation ::  {}".format(rgb_corr.shape))
+        # # print("depth correlation :: {}".format(depth_corr.shape))
+        #
         loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
         loss_depth = criterion(depth_out, torch.max(y, 1)[1])
-        # print("RGB loss :: {}".format(loss_rgb))
-        # print("depth loss :: {}".format(loss_depth))
-
-        focal_reg_param = regularizer(loss_rgb, loss_depth)
-
-        """
-        norm || x ||
-            Take the difference element wise
-            Square all the values
-            Add them all together
-            Take the square root
-            Multiply it with rho
-        """
-        corr_diff_rgb = torch.sqrt(torch.sum(torch.sub(rgb_corr, depth_corr) ** 2))
-        corr_diff_depth = torch.sqrt(torch.sum(torch.sub(depth_corr, rgb_corr) ** 2))
-
-        # loss (m,n)
-        ssa_loss_rgb = focal_reg_param * corr_diff_rgb
-        ssa_loss_depth = focal_reg_param * corr_diff_depth
-
-        # total loss
-        reg_loss_rgb = loss_rgb + (_lambda * ssa_loss_rgb)
-        reg_loss_depth = loss_depth + (_lambda * ssa_loss_depth)
-
+        # # print("RGB loss :: {}".format(loss_rgb))
+        # # print("depth loss :: {}".format(loss_depth))
+        #
+        # focal_reg_param = regularizer(loss_rgb, loss_depth)
+        #
+        # """
+        # norm || x ||
+        #     Take the difference element wise
+        #     Square all the values
+        #     Add them all together
+        #     Take the square root
+        #     Multiply it with rho
+        # """
+        # corr_diff_rgb = torch.sqrt(torch.sum(torch.sub(rgb_corr, depth_corr) ** 2))
+        # corr_diff_depth = torch.sqrt(torch.sum(torch.sub(depth_corr, rgb_corr) ** 2))
+        #
+        # # loss (m,n)
+        # ssa_loss_rgb = focal_reg_param * corr_diff_rgb
+        # ssa_loss_depth = focal_reg_param * corr_diff_depth
+        #
+        # # total loss
+        reg_loss_rgb = loss_rgb  #+ (_lambda * ssa_loss_rgb)
+        reg_loss_depth = loss_depth #+ (_lambda * ssa_loss_depth)
+        #
         reg_loss_rgb.backward(retain_graph=True)
         reg_loss_depth.backward()
 
@@ -116,9 +117,9 @@ def train(args,
         depth_losses.append(loss_depth.item())
         rgb_regularized_losses.append(reg_loss_rgb.item())
         depth_regularized_losses.append(reg_loss_depth.item())
-        tq.update(1)
-        if batch_idx == 0:
-            train_result.update({"rgb_ft_map": rgb_avg_sq_ft_map, "depth_ft_map": depth_avg_sq_ft_map})
+        # tq.update(1)
+        # if batch_idx == 0:
+        #     train_result.update({"rgb_ft_map": rgb_avg_sq_ft_map, "depth_ft_map": depth_avg_sq_ft_map})
 
     valid_result = validation(model_rgb=model_rgb, model_depth=model_depth, criterion=criterion,
                               valid_loader=valid_loader, num_classes=num_classes)

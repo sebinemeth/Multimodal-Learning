@@ -12,15 +12,14 @@ def initialize_tensorboard(log_dir, common_name):
     tb_log_path = Path(log_dir).joinpath(common_name)
     if not os.path.exists(tb_log_path):
         os.mkdir(tb_log_path)
-    tb_writer = SummaryWriter(log_dir=tb_log_path)
+    tb_writer = SummaryWriter(log_dir=str(tb_log_path))
     return tb_writer
 
 
-def update_tensorboard(tb_writer, epoch, train_dict, valid_dict):
+def update_tensorboard_train(tb_writer, epoch, train_dict):
     """
     {"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "loss_depth": mean_depth,
         "loss_reg_depth": mean_reg_depth, "rgb_ft_map": rgb_avg_sq_ft_map, "depth_ft_map": depth_avg_sq_ft_map}
-    {'valid_rgb_loss': valid_rgb_loss, 'valid_depth_loss': valid_depth_loss}
     """
 
     tb_writer.add_scalar(tag='RGB train loss', scalar_value=train_dict["loss_rgb"], global_step=epoch)
@@ -32,6 +31,12 @@ def update_tensorboard(tb_writer, epoch, train_dict, valid_dict):
     tb_writer.add_scalar(tag='Depth train loss', scalar_value=train_dict["loss_depth"], global_step=epoch)
     tb_writer.add_scalar(tag='Depth regularized train loss', scalar_value=train_dict["loss_reg_depth"],
                          global_step=epoch)
+
+
+def update_tensorboard_val(tb_writer, epoch, valid_dict):
+    """
+    {'valid_rgb_loss': valid_rgb_loss, 'valid_depth_loss': valid_depth_loss}
+    """
     tb_writer.add_scalar(tag='RGB valid loss', scalar_value=valid_dict["valid_rgb_loss"], global_step=epoch)
     tb_writer.add_scalar(tag='Depth valid loss', scalar_value=valid_dict["valid_depth_loss"], global_step=epoch)
 

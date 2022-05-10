@@ -11,24 +11,35 @@ from tqdm import tqdm
 import math
 import random
 
+from spatial_transforms import Compose, ToTensor, Normalize, Scale
+from temporal_transforms import TemporalRandomCrop
+
 from model import CNN3D
 from dataset import Senz3dDataset
+from nv_dataset import NV
 from util import *
 from i3dpt import *
 from validation import *
 import torch.nn.functional as F
+from torchsummary import summary
 
-data_path = "./datasets/senz3d_dataset/acquisitions"
+video_path = "./datasets/nvGesture"
+train_annotation_path = "./datasets/nvGesture/nvgesture_train_correct_cvpr2016_v2.lst"
+valid_annotation_path = "./datasets/nvGesture/nvgesture_test_correct_cvpr2016_v2.lst"
 # train_path = "./datasets/senz3d_dataset"
 # test_path = "./datasets/senz3d_dataset"
 # train_path = "/home/sagar/data/senz3d_dataset/dataset/train/"
 # test_path = "/home/sagar/data/senz3d_dataset/dataset/test/"
-img_x, img_y = 256, 256  # resize video 2d frame size
-depth_x, depth_y = 320, 240
+
+# TODO
+# img_x, img_y = 320, 240  # resize video 2d frame size
+img_x, img_y = 200, 200  # resize video 2d frame size
+depth_x, depth_y = 200, 200
+# depth_x, depth_y = 320, 240
 # Select which frame to begin & end in videos
 begin_frame, end_frame, skip_frame = 1, 8, 1
 n_epoch = 10
-num_classes = 11
+num_classes = 25 + 1
 lr = 1e-4
 _lambda = 0.05  # 50 x 10^-3
 
@@ -54,9 +65,13 @@ def train(args,
     depth_regularized_losses = []
     train_result = {}
     valid_result = {}
+
+    tb_batch_freq = 20
+    tb_step = epoch * len(train_loader)
+
     for batch_idx, (rgb, depth, y) in enumerate(train_loader):
         # distribute data to device
-        rgb, depth, y = rgb.to(device), depth.to(device), y.to(device)
+        rgb, depth, y = rgb.to(device), depth.to(device), y.to(device)  # F.one_hot(y).to(device)
 
         optimizer_rgb.zero_grad()
         optimizer_depth.zero_grad()
@@ -64,10 +79,15 @@ def train(args,
         rgb_out, rgb_feature_map = model_rgb(rgb)
         depth_out, depth_feature_map = model_depth(depth)
 
+        rgb_feature_map = rgb_feature_map.view(rgb_feature_map.shape[0], rgb_feature_map.shape[1], -1)
         rgb_feature_map_T = torch.transpose(rgb_feature_map, 1, 2)
+
+        depth_feature_map = depth_feature_map.view(depth_feature_map.shape[0], depth_feature_map.shape[1], -1)
         depth_feature_map_T = torch.transpose(depth_feature_map, 1, 2)
         # print("RGB fmap shape :: {}".format(rgb_feature_map.shape))
+        # print("RGB fmap shape T :: {}".format(rgb_feature_map_T.shape))
         # print("depth fmap shape :: {}".format(depth_feature_map.shape))
+        # print("depth fmap shape T:: {}".format(depth_feature_map_T.shape))
         # torch.save(rgb_feature_map_T, "rgbFeatureMapT.pt")
 
         rgb_sq_ft_map = rgb_feature_map_T.squeeze()
@@ -75,13 +95,18 @@ def train(args,
         depth_sq_ft_map = depth_feature_map_T.squeeze()
         depth_avg_sq_ft_map = torch.mean(depth_sq_ft_map, 0)
 
-        rgb_corr = torch.mul(rgb_feature_map, rgb_feature_map_T)
-        depth_corr = torch.mul(depth_feature_map, depth_feature_map_T)
+        rgb_corr = torch.bmm(rgb_feature_map_T, rgb_feature_map)
+        depth_corr = torch.bmm(depth_feature_map_T, depth_feature_map)
         # print("RGB correlation ::  {}".format(rgb_corr.shape))
         # print("depth correlation :: {}".format(depth_corr.shape))
 
-        loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
-        loss_depth = criterion(depth_out, torch.max(y, 1)[1])
+        # print("RGB  ::  {}".format(rgb_out.shape))
+        # print("y :: {}".format(y))
+
+        # loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
+        # loss_depth = criterion(depth_out, torch.max(y, 1)[1])
+        loss_rgb = criterion(rgb_out, y)  # index of the max log-probability
+        loss_depth = criterion(depth_out, y)
         # print("RGB loss :: {}".format(loss_rgb))
         # print("depth loss :: {}".format(loss_depth))
 
@@ -119,19 +144,40 @@ def train(args,
         tq.update(1)
         if batch_idx == 0:
             train_result.update({"rgb_ft_map": rgb_avg_sq_ft_map, "depth_ft_map": depth_avg_sq_ft_map})
+        tq.set_postfix(RGB_loss='{:.5f}'.format(rgb_losses[-1]),
+                       regularized_rgb_loss='{:.5f}'.format(rgb_regularized_losses[-1]))
+
+        if batch_idx % tb_batch_freq == 0:
+            mean_rgb = np.mean(rgb_losses)
+            mean_reg_rgb = np.mean(rgb_regularized_losses)
+            mean_depth = np.mean(depth_losses)
+            mean_reg_depth = np.mean(depth_regularized_losses)
+            train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "loss_depth": mean_depth,
+                                 "loss_reg_depth": mean_reg_depth})
+            update_tensorboard_train(tb_writer=tb_writer, epoch=tb_step, train_dict=train_result)
+            update_tensorboard_image(tb_writer, tb_step, train_result)
+
+            tb_step += 1
+
+            rgb_losses = []
+            depth_losses = []
+            rgb_regularized_losses = []
+            depth_regularized_losses = []
 
     valid_result = validation(model_rgb=model_rgb, model_depth=model_depth, criterion=criterion,
                               valid_loader=valid_loader, num_classes=num_classes)
-    mean_rgb = np.mean(rgb_losses)
-    mean_reg_rgb = np.mean(rgb_regularized_losses)
-    mean_depth = np.mean(depth_losses)
-    mean_reg_depth = np.mean(depth_regularized_losses)
-    train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "loss_depth": mean_depth,
-                         "loss_reg_depth": mean_reg_depth})
-    tq.set_postfix(RGB_loss='{:.5f}'.format(train_result["loss_rgb"]),
-                   regularized_rgb_loss='{:.5f}'.format(train_result["loss_reg_rgb"]))
-    update_tensorboard(tb_writer=tb_writer, epoch=epoch, train_dict=train_result, valid_dict=valid_result)
-    update_tensorboard_image(tb_writer, epoch, train_result)
+    update_tensorboard_val(tb_writer=tb_writer, epoch=epoch, valid_dict=valid_result)
+    # mean_rgb = np.mean(rgb_losses)
+    # mean_reg_rgb = np.mean(rgb_regularized_losses)
+    # mean_depth = np.mean(depth_losses)
+    # mean_reg_depth = np.mean(depth_regularized_losses)
+    # train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "loss_depth": mean_depth,
+    #                      "loss_reg_depth": mean_reg_depth})
+    # tq.set_postfix(RGB_loss='{:.5f}'.format(train_result["loss_rgb"]),
+    #                regularized_rgb_loss='{:.5f}'.format(train_result["loss_reg_rgb"]))
+    # update_tensorboard(tb_writer=tb_writer, epoch=epoch, train_dict=train_result, valid_dict=valid_result)
+    # update_tensorboard_image(tb_writer, epoch, train_result)
+    # tb_writer.flush()
 
 
 def main():
@@ -150,15 +196,15 @@ def main():
     train_videos_path = []
     test_videos_path = []
 
-    test_idx_list = [9, 10, 11]
+    # test_idx_list = [9, 10, 11]
 
-    for s_idx in range(1, 5):
-        for g_idx in range(1, 12):
-            path = os.path.join(data_path, f"S{s_idx}", f"G{g_idx}")
-            if g_idx in test_idx_list:
-                test_videos_path.append(path)
-            else:
-                train_videos_path.append(path)
+    # for s_idx in range(1, 5):
+    #     for g_idx in range(1, 12):
+    #         path = os.path.join(data_path, f"S{s_idx}", f"G{g_idx}")
+    #         if g_idx in test_idx_list:
+    #             test_videos_path.append(path)
+    #         else:
+    #             train_videos_path.append(path)
 
     # for folder in os.listdir(train_path):
     #     train_videos_path.append(train_path + folder)
@@ -166,24 +212,69 @@ def main():
     # for folder in os.listdir(test_path):
     #     test_videos_path.append(test_path + folder)
 
+    # TODO
     selected_frames = np.arange(begin_frame, end_frame, skip_frame).tolist()
+    #print("len(selected_frames): {}".format(len(selected_frames)))
 
-    train_rgb_set = Senz3dDataset(train_videos_path, selected_frames, to_augment=False, mode='train')
-    test_rgb_set = Senz3dDataset(test_videos_path, selected_frames, to_augment=False, mode='test')
+    sample_duration = 16
+    norm_method = Normalize([0, 0, 0], [1, 1, 1])
 
-    train_loader = data.DataLoader(train_rgb_set, pin_memory=True, batch_size=1)
-    valid_loader = data.DataLoader(test_rgb_set, pin_memory=True, batch_size=1)
+    training_data = NV(
+        video_path,
+        train_annotation_path,
+        "train",
+        num_classes,
+        frame_jump=1,
+        spatial_transform=Compose([Scale((img_x, img_y)), ToTensor(), norm_method]),
+        # temporal_transform=TemporalRandomCrop(sample_duration, downsample=1),
+        # target_transform=target_transform,
+        sample_duration=sample_duration,
+        modality="RGB-D")
 
-    # model_rgb_cnn = CNN3D(t_dim=len(selected_frames), img_x=img_x, img_y=img_y, num_classes=11).to(device)
-    model_rgb_cnn = I3D(num_classes=num_classes,
-                        modality='rgb',
-                        dropout_prob=0,
-                        name='inception').to(device)
-    # model_depth_cnn = CNN3D(t_dim=len(selected_frames), img_x=depth_x, img_y=depth_y, num_classes=11).to(device)
-    model_depth_cnn = I3D(num_classes=num_classes,
-                          modality='rgb',
-                          dropout_prob=0,
-                          name='inception').to(device)
+    train_loader = torch.utils.data.DataLoader(
+        training_data,
+        batch_size=10,
+        shuffle=True,
+        num_workers=2,
+        pin_memory=True)
+
+    valid_data = NV(
+        video_path,
+        valid_annotation_path,
+        "valid",
+        num_classes,
+        frame_jump=1,
+        spatial_transform=Compose([Scale((img_x, img_y)), ToTensor(), norm_method]),
+        # temporal_transform=TemporalRandomCrop(sample_duration, downsample=1),
+        # target_transform=target_transform,
+        sample_duration=sample_duration,
+        modality="RGB-D")
+
+    valid_loader = torch.utils.data.DataLoader(
+        valid_data,
+        batch_size=10,
+        shuffle=True,
+        num_workers=2,
+        pin_memory=True)
+
+    # train_rgb_set = Senz3dDataset(train_videos_path, selected_frames, to_augment=False, mode='train')
+    # test_rgb_set = Senz3dDataset(test_videos_path, selected_frames, to_augment=False, mode='test')
+
+    # train_loader = data.DataLoader(train_rgb_set, pin_memory=True, batch_size=1)
+    # valid_loader = data.DataLoader(test_rgb_set, pin_memory=True, batch_size=1)
+
+    model_rgb_cnn = CNN3D(t_dim=sample_duration, ch_in=3, img_x=img_x, img_y=img_y, num_classes=num_classes).to(device)
+    #summary(model_rgb_cnn, input_size=(sample_duration * 3, img_y, img_x))
+    # model_rgb_cnn = I3D(num_classes=num_classes,
+    #                     modality='rgb',
+    #                     dropout_prob=0,
+    #                     name='inception').to(device)
+    model_depth_cnn = CNN3D(t_dim=sample_duration, ch_in=1, img_x=depth_x, img_y=depth_y, num_classes=num_classes).to(device)
+    #summary(model_depth_cnn, input_size=(sample_duration, img_y, img_x))
+    # model_depth_cnn = I3D(num_classes=num_classes,
+    #                       modality='rgb',
+    #                       dropout_prob=0,
+    #                       name='inception').to(device)
     optimizer_rgb = torch.optim.Adam(model_rgb_cnn.parameters(), lr=lr)  # optimize all cnn parameters
     optimizer_depth = torch.optim.Adam(model_depth_cnn.parameters(), lr=lr)  # optimize all cnn parameters
     criterion = torch.nn.CrossEntropyLoss()

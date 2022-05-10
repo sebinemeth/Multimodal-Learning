@@ -1,6 +1,7 @@
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
 
 
 def conv3D_output_size(img_size, padding, kernel_size, stride):
@@ -10,8 +11,10 @@ def conv3D_output_size(img_size, padding, kernel_size, stride):
                 np.floor((img_size[2] + 2 * padding[2] - (kernel_size[2] - 1) - 1) / stride[2] + 1).astype(int))
     return outshape
 
+
 class CNN3D(nn.Module):
-    def __init__(self, t_dim=120, img_x=90, img_y=120, drop_p=0.2, fc_hidden1=256, fc_hidden2=128, num_classes=50):
+    def __init__(self, t_dim=120, ch_in=1, img_x=90, img_y=120, drop_p=0.2, fc_hidden1=256, fc_hidden2=128,
+                 num_classes=50):
         super(CNN3D, self).__init__()
 
         # set video dimension
@@ -31,7 +34,8 @@ class CNN3D(nn.Module):
         self.conv1_outshape = conv3D_output_size((self.t_dim, self.img_x, self.img_y), self.pd1, self.k1, self.s1)
         self.conv2_outshape = conv3D_output_size(self.conv1_outshape, self.pd2, self.k2, self.s2)
 
-        self.conv1 = nn.Conv3d(in_channels=1, out_channels=self.ch1, kernel_size=self.k1, stride=self.s1,
+        # self.conv1 = nn.Conv3d(in_channels=1, out_channels=self.ch1, kernel_size=self.k1, stride=self.s1, padding=self.pd1)
+        self.conv1 = nn.Conv3d(in_channels=ch_in, out_channels=self.ch1, kernel_size=self.k1, stride=self.s1,
                                padding=self.pd1)
         self.bn1 = nn.BatchNorm3d(self.ch1)
         self.conv2 = nn.Conv3d(in_channels=self.ch1, out_channels=self.ch2, kernel_size=self.k2, stride=self.s2,
@@ -49,7 +53,7 @@ class CNN3D(nn.Module):
         # print("Input {} ".format(x_3d.shape))
         # Conv 1
         x = self.conv1(x_3d)
-        print("DBG 1 {} ".format(x.shape))
+        # print("DBG 1 {} ".format(x.shape))
         x = self.bn1(x)
         x = self.relu(x)
         x = self.drop(x)
@@ -59,7 +63,17 @@ class CNN3D(nn.Module):
         x = self.bn2(x)
         x = self.relu(x)
         x = self.drop(x)
-        print("DBG 2 {} ".format(x.shape))
+        # print("DBG 2 {} ".format(x.shape))
+
+        feature_map = x
+        #####################################################################################
+
+        variance, sample_mean = torch.var_mean(feature_map)
+        sub_map = torch.sub(feature_map, sample_mean)
+        correlation_matrix = torch.div(sub_map, variance)
+
+        #####################################################################################
+
         # FC 1 and 2
         x = x.view(x.size(0), -1)
         x = F.relu(self.fc1(x))
@@ -67,4 +81,4 @@ class CNN3D(nn.Module):
         x = F.dropout(x, p=self.drop_p, training=self.training)
         x = self.fc3(x)
         # print(x)
-        return x
+        return x, correlation_matrix
