@@ -114,7 +114,6 @@ def get_lst_data(data_file_path, root_path):
             max_index_color = int(list(sorted(glob(os.path.join(root_path, path, "sk_color_all/*.jpg"))))[-1].split('/')[-1].split('.')[0])
             max_index_depth = int(list(sorted(glob(os.path.join(root_path, path, "sk_depth_all/*.jpg"))))[-1].split('/')[-1].split('.')[0])
             max_frame_idx = min(max_index_color, max_index_depth)
-            print(max_index_color, max_index_depth)
 
             # with open(os.path.join(root_path, path, "sk_color_log.txt"), 'r') as sk_color_log:
             #     last_line_color = sk_color_log.readlines()[-1]
