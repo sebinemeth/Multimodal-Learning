@@ -4,6 +4,8 @@ import os
 import numpy as np
 import torch
 from torch.nn import ReplicationPad3d
+
+
 # https://github.com/hassony2/kinetics_i3d_pytorch/blob/master/src/i3dpt.py
 
 def get_padding_shape(filter_shape, stride):
