@@ -198,6 +198,7 @@ def make_dataset(root_path, annotation_path, subset, sample_duration, frame_jump
         end_t = int(annotations[i]['end_frame'])
 
         if only_with_gesture:
+            print(666)
             # TODO: end_t + 1 does not work
             for last_frame_idx in range(min(end_t, max_frame_idx), begin_t, -1):
                 frame_indices = sorted([last_frame_idx - (i * frame_jump) for i in range(sample_duration)])
@@ -305,7 +306,7 @@ class NV(data.Dataset):
         self.modality = modality
         self.sample_duration = sample_duration
         self.img_size = img_size
-        self.loader = get_loader(frame_idx_offset=0)
+        self.loader = get_loader(frame_idx_offset=1)
 
     def __getitem__(self, index):
         """
