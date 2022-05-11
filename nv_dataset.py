@@ -199,7 +199,7 @@ def make_dataset(root_path, annotation_path, subset, sample_duration, frame_jump
 
         if only_with_gesture:
             # TODO: end_t + 1 does not work
-            for last_frame_idx in range(end_t, begin_t, -1):
+            for last_frame_idx in range(min(end_t, max_frame_idx), begin_t, -1):
                 frame_indices = sorted([last_frame_idx - (i * frame_jump) for i in range(sample_duration)])
                 assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)
 
