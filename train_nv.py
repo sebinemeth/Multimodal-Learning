@@ -44,6 +44,7 @@ num_classes = 25 if only_with_gesture else 25 + 1
 lr = 1e-4
 _lambda = 0.05  # 50 x 10^-3
 
+tb_step = 0
 
 def train(args,
           model_rgb,
@@ -65,10 +66,13 @@ def train(args,
     rgb_regularized_losses = []
     depth_regularized_losses = []
     train_result = {}
-    valid_result = {}
+
+    rgb_correct = 0
+    depth_correct = 0
+    total = 0
 
     tb_batch_freq = 20
-    tb_step = epoch * len(train_loader)
+    global tb_step
 
     for batch_idx, (rgb, depth, y) in enumerate(train_loader):
         # distribute data to device
@@ -142,19 +146,33 @@ def train(args,
         depth_losses.append(loss_depth.item())
         rgb_regularized_losses.append(reg_loss_rgb.item())
         depth_regularized_losses.append(reg_loss_depth.item())
+
+        total += y.size(0)
+
+        _, rgb_predicted = rgb_out.max(1)
+        rgb_correct += rgb_predicted.eq(y).sum().item()
+
+        _, depth_predicted = depth_out.max(1)
+        depth_correct += depth_predicted.eq(y).sum().item()
+
+        acc_rgb = rgb_correct / total
+        acc_depth = depth_correct / total
+
         tq.update(1)
         if batch_idx == 0:
             train_result.update({"rgb_ft_map": rgb_avg_sq_ft_map, "depth_ft_map": depth_avg_sq_ft_map})
-        tq.set_postfix(RGB_loss='{:.5f}'.format(rgb_losses[-1]),
-                       regularized_rgb_loss='{:.5f}'.format(rgb_regularized_losses[-1]))
+        tq.set_postfix(RGB_loss='{:.2f}'.format(rgb_losses[-1]),
+                       regularized_rgb_loss='{:.2f}'.format(rgb_regularized_losses[-1]),
+                       acc_rgb='{:.0f}%'.format(acc_rgb * 100),
+                       acc_depth='{:.0f}%'.format(acc_depth * 100))
 
         if batch_idx % tb_batch_freq == 0:
             mean_rgb = np.mean(rgb_losses)
             mean_reg_rgb = np.mean(rgb_regularized_losses)
             mean_depth = np.mean(depth_losses)
             mean_reg_depth = np.mean(depth_regularized_losses)
-            train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "loss_depth": mean_depth,
-                                 "loss_reg_depth": mean_reg_depth})
+            train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "acc_rgb": acc_rgb,
+                                 "loss_depth": mean_depth, "loss_reg_depth": mean_reg_depth, "acc_depth": acc_depth})
             update_tensorboard_train(tb_writer=tb_writer, epoch=tb_step, train_dict=train_result)
             update_tensorboard_image(tb_writer, tb_step, train_result)
 
