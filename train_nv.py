@@ -240,7 +240,7 @@ def main():
     # for folder in os.listdir(test_path):
     #     test_videos_path.append(test_path + folder)
 
-    # TODO
+    # TODO Scale(img_x)
     # selected_frames = np.arange(begin_frame, end_frame, skip_frame).tolist()
     # print("len(selected_frames): {}".format(len(selected_frames)))
 
@@ -252,7 +252,7 @@ def main():
         "train",
         num_classes,
         frame_jump=1,
-        spatial_transform=Compose([Scale((img_x, img_y)), ToTensor(), norm_method]),
+        spatial_transform=Compose([Scale(img_x), ToTensor(), norm_method]),
         # temporal_transform=TemporalRandomCrop(sample_duration, downsample=1),
         # target_transform=target_transform,
         sample_duration=sample_duration,
@@ -274,7 +274,7 @@ def main():
         "valid",
         num_classes,
         frame_jump=1,
-        spatial_transform=Compose([Scale((img_x, img_y)), ToTensor(), norm_method]),
+        spatial_transform=Compose([Scale(img_x), ToTensor(), norm_method]),
         # temporal_transform=TemporalRandomCrop(sample_duration, downsample=1),
         # target_transform=target_transform,
         sample_duration=sample_duration,
