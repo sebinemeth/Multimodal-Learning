@@ -263,7 +263,7 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(
         training_data,
-        batch_size=4,
+        batch_size=2,
         shuffle=True,
         num_workers=10,
         pin_memory=True)
