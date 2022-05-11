@@ -263,7 +263,7 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(
         training_data,
-        batch_size=10,
+        batch_size=6,
         shuffle=True,
         num_workers=10,
         pin_memory=True)
@@ -285,7 +285,7 @@ def main():
 
     valid_loader = torch.utils.data.DataLoader(
         valid_data,
-        batch_size=6,
+        batch_size=2,
         shuffle=False,
         num_workers=10,
         pin_memory=True)
