@@ -136,7 +136,8 @@ def get_lst_data(data_file_path, root_path):
                           "end_frame": depth.split(":")[-1],
                           "label": int(label.split(":")[-1]) - 1,
                           "max_frame_idx": max_frame_idx}
-
+            print(max_index_color, max_index_depth, max_frame_idx, depth.split(":")[-2], depth.split(":")[-1])
+            input()
             video_names.append(path)
             annotations.append(annotation)
 
@@ -198,7 +199,6 @@ def make_dataset(root_path, annotation_path, subset, sample_duration, frame_jump
         end_t = int(annotations[i]['end_frame'])
 
         if only_with_gesture:
-            print(666)
             # TODO: end_t + 1 does not work
             for last_frame_idx in range(min(end_t, max_frame_idx), begin_t, -1):
                 frame_indices = sorted([last_frame_idx - (i * frame_jump) for i in range(sample_duration)])
