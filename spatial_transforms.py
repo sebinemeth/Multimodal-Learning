@@ -162,7 +162,11 @@ class Scale(object):
                 ow = int(self.size * w / h)
                 return img.resize((ow, oh), self.interpolation)
         else:
-            return img.resize(self.size, self.interpolation)
+            try:
+                return img.resize(self.size, self.interpolation)
+            except TypeError:
+                print(img)
+                exit()
 
     def randomize_parameters(self):
         pass
