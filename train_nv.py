@@ -108,8 +108,8 @@ def train(args,
         # print("RGB correlation ::  {}".format(rgb_corr.shape))
         # print("depth correlation :: {}".format(depth_corr.shape))
 
-        print("RGB  ::  {}".format(rgb_out.shape))
-        print("y :: {}".format(y))
+        # print("RGB  ::  {}".format(rgb_out.shape))
+        # print("y :: {}".format(y))
 
         # loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
         # loss_depth = criterion(depth_out, torch.max(y, 1)[1])

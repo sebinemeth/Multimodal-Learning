@@ -243,7 +243,7 @@ class I3D(torch.nn.Module):
 
     def forward(self, inp):
         # Preprocessing
-        print("input to model : {}".format(inp.shape))
+        # print("input to model : {}".format(inp.shape))
         out = self.conv3d_1a_7x7(inp)
         # print("conv3d_1a_7x7 output : {}".format(out.shape))
         out = self.maxPool3d_2a_3x3(out)
@@ -295,9 +295,9 @@ class I3D(torch.nn.Module):
         out = out.squeeze(3)
         out = out.mean(2)
         out_logits = out
-        print("out_logits : {}".format(out_logits.shape))
+        # print("out_logits : {}".format(out_logits.shape))
         out = self.softmax(out_logits)
-        print("softmax : {}".format(out.shape))
+        # print("softmax : {}".format(out.shape))
         return out, correlation_matrix
 
     def load_tf_weights(self, sess):
