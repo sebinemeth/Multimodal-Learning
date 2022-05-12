@@ -153,6 +153,7 @@ class Scale(object):
             assert img.shape[0] == self.size[0]
             assert img.shape[1] == self.size[1]
             # TODO: size is int ???
+            return img
 
         if isinstance(self.size, int):
             w, h = img.size
