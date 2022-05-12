@@ -243,7 +243,7 @@ class I3D(torch.nn.Module):
 
     def forward(self, inp):
         # Preprocessing
-        # print("input to model : {}".format(inp.shape))
+        print("input to model : {}".format(inp.shape))
         out = self.conv3d_1a_7x7(inp)
         # print("conv3d_1a_7x7 output : {}".format(out.shape))
         out = self.maxPool3d_2a_3x3(out)
