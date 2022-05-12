@@ -149,6 +149,11 @@ class Scale(object):
         Returns:
             PIL.Image: Rescaled image.
         """
+        if isinstance(img, np.ndarray):
+            assert img.shape[0] == self.size[0]
+            assert img.shape[1] == self.size[1]
+            # TODO: size is int ???
+
         if isinstance(self.size, int):
             w, h = img.size
             if (w <= h and w == self.size) or (h <= w and h == self.size):
@@ -162,11 +167,8 @@ class Scale(object):
                 ow = int(self.size * w / h)
                 return img.resize((ow, oh), self.interpolation)
         else:
-            try:
-                return img.resize(self.size, self.interpolation)
-            except TypeError:
-                print(img)
-                exit()
+            return img.resize(self.size, self.interpolation)
+
 
     def randomize_parameters(self):
         pass
