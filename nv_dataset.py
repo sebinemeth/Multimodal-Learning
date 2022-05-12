@@ -74,7 +74,7 @@ def video_loader(video_dir_path, frame_indices, modality, img_size, image_loader
     elif modality == 'RGB-D':
         for frame_idx in frame_indices:  # index 35 is used to change img to flow
             if frame_idx < 0:
-                video.append((np.zeros((img_size[0], img_size[1], 3)), np.zeros((img_size[0], img_size[1]))))
+                video.append((np.zeros((img_size[0], img_size[1], 3)), np.zeros((img_size[0], img_size[1], 1))))
             else:
 
                 image_path = os.path.join(video_dir_path, '{:05d}.jpg'.format(frame_idx + frame_idx_offset))
