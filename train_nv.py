@@ -190,8 +190,8 @@ def train(args,
                               valid_loader=valid_loader, num_classes=num_classes)
     update_tensorboard_val(tb_writer=tb_writer, epoch=epoch, valid_dict=valid_result)
 
-    torch.save(model_rgb.state_dict(), os.path.join(model_save_dir, "model_rgb_{}".format(epoch)))
-    torch.save(model_depth.state_dict(), os.path.join(model_save_dir, "model_depth_{}".format(epoch)))
+    torch.save(model_rgb.state_dict(), os.path.join(model_save_dir, "model_rgb_{}.pt".format(epoch)))
+    torch.save(model_depth.state_dict(), os.path.join(model_save_dir, "model_depth_{}.pt".format(epoch)))
     # mean_rgb = np.mean(rgb_losses)
     # mean_reg_rgb = np.mean(rgb_regularized_losses)
     # mean_depth = np.mean(depth_losses)
@@ -220,6 +220,7 @@ def main():
 
     global model_save_dir
     model_save_dir += args.save_as
+    os.makedirs(model_save_dir, exist_ok=True)
 
     train_videos_path = []
     test_videos_path = []
