@@ -323,10 +323,6 @@ def main():
             return (beta * math.exp(loss1 - loss2)) - 1
         return 0.0
 
-    # print(model_rgb_cnn)
-    torch.save(model_rgb_cnn.state_dict(), os.path.join(model_save_dir, "model_rgb_{}.pt".format(-1)))
-    torch.save(model_depth_cnn.state_dict(), os.path.join(model_save_dir, "model_depth_{}.pt".format(-1)))
-
     for epoch in range(n_epoch):
         tq = tqdm(total=(len(train_loader)))
         tq.set_description('ep {}, {}'.format(epoch, lr))
