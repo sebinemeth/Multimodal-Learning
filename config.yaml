@@ -4,7 +4,7 @@ val_annotation_path: "./datasets/nvGesture/nvgesture_test_correct_cvpr2016_v2.ls
 ckp_model_path:
 
 epoch: 10
-learning_rate: 1e-4
+learning_rate: 0.0001
 lambda: 0.05  # 50 x 10^-3
 num_of_classes: 25
 only_with_gesture: True
