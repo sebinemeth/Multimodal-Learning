@@ -33,9 +33,9 @@ os.makedirs(model_save_dir, exist_ok=True)
 train_loader, valid_loader = get_loaders(config_dict)
 
 for k, (rgb, depth, targets) in enumerate(train_loader):
-    print(rgb)
-    print(depth)
-    print(targets)
+    print(rgb.shape)
+    print(depth.shape)
+    print(targets.shape)
     input()
 
 

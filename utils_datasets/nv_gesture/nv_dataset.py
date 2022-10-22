@@ -48,10 +48,10 @@ class NV(data.Dataset):
             rgb_images = [self.spatial_transform(rgb_image) for rgb_image in rgb_images]
             depth_images = [self.spatial_transform(depth_image) for depth_image in depth_images]
 
-        rgb = torch.stack(rgb_images, dim=1)
-        depth = torch.stack(depth_images, dim=1)
+        rgb = torch.stack(rgb_images, dim=1)  # shape: (batch size, chanel, duration, width, height)
+        depth = torch.stack(depth_images, dim=1)  # shape: (batch size, chanel, duration, width, height)
 
-        target = self.data_info_list[index]["label"]
+        target = self.data_info_list[index]["label"]  # shape: (batch size)
         return rgb, depth, target
 
     def __len__(self):
