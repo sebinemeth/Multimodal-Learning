@@ -9,8 +9,8 @@ learning_rate: 1e-4
 num_of_classes: 25
 only_with_gesture: True
 
-resized_img_x: 224
-resized_img_y: 224
+img_x: 224
+img_y: 224
 depth_x: 224
 depth_y: 224
 

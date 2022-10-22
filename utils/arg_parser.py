@@ -76,8 +76,8 @@ def get_config_dict():
     opt.add_argument("--only_with_gesture", default=None, type=str2bool, help="training only with gestures")
 
     # Other parameters
-    opt.add_argument("--resized_img_x", default=None, type=str2int, help="")
-    opt.add_argument("--resized_img_y", default=None, type=str2int, help="")
+    opt.add_argument("--img_x", default=None, type=str2int, help="")
+    opt.add_argument("--img_y", default=None, type=str2int, help="")
     opt.add_argument("--depth_x", default=None, type=str2int, help="")
     opt.add_argument("--depth_y", default=None, type=str2int, help="")
     opt.add_argument("--sample_duration", default=None, type=str2int, help="")
