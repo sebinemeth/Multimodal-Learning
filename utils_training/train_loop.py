@@ -133,12 +133,14 @@ class TrainLoop(object):
                 acc_depth = depth_correct / total
 
                 tq.update(1)
+                tq.set_postfix(RGB_loss='{:.2f}'.format(np.mean(rgb_losses)),
+                               DEPTH_loss='{:.2f}'.format(np.mean(depth_losses)),
+                               RGB_reg_loss='{:.2f}'.format(np.mean(rgb_regularized_losses)),
+                               RGB_acc='{:.1f}%'.format(acc_rgb * 100),
+                               DEPTH_acc='{:.1f}%'.format(acc_depth * 100))
+
                 if batch_idx == 0:
                     train_result.update({"rgb_ft_map": rgb_avg_sq_ft_map, "depth_ft_map": depth_avg_sq_ft_map})
-                tq.set_postfix(RGB_loss='{:.2f}'.format(rgb_losses[-1]),
-                               regularized_rgb_loss='{:.2f}'.format(rgb_regularized_losses[-1]),
-                               acc_rgb='{:.1f}%'.format(acc_rgb * 100),
-                               acc_depth='{:.1f}%'.format(acc_depth * 100))
 
                 if batch_idx % self.config_dict["tb_batch_freq"] == 0:
                     mean_rgb = np.mean(rgb_losses)
@@ -148,7 +150,7 @@ class TrainLoop(object):
                     train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "acc_rgb": acc_rgb,
                                          "loss_depth": mean_depth, "loss_reg_depth": mean_reg_depth,
                                          "acc_depth": acc_depth})
-                    update_tensorboard_train(tb_writer=self.tb_writer, epoch=tb_step, train_dict=train_result)
+                    update_tensorboard_train(tb_writer=self.tb_writer, global_step=tb_step, train_dict=train_result)
                     update_tensorboard_image(self.tb_writer, tb_step, train_result)
 
                     tb_step += 1
@@ -160,20 +162,10 @@ class TrainLoop(object):
 
             valid_result = validation_step(model_rgb=self.rgb_cnn, model_depth=self.depth_cnn, criterion=self.criterion,
                                            valid_loader=self.valid_loader)
-            update_tensorboard_val(tb_writer=self.tb_writer, epoch=epoch, valid_dict=valid_result)
+            update_tensorboard_val(tb_writer=self.tb_writer, global_step=tb_step, valid_dict=valid_result)
             self.save_models(epoch)
 
-            # mean_rgb = np.mean(rgb_losses)
-            # mean_reg_rgb = np.mean(rgb_regularized_losses)
-            # mean_depth = np.mean(depth_losses)
-            # mean_reg_depth = np.mean(depth_regularized_losses)
-            # train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "loss_depth": mean_depth,
-            #                      "loss_reg_depth": mean_reg_depth})
-            # tq.set_postfix(RGB_loss='{:.5f}'.format(train_result["loss_rgb"]),
-            #                regularized_rgb_loss='{:.5f}'.format(train_result["loss_reg_rgb"]))
-            # update_tensorboard(tb_writer=tb_writer, epoch=epoch, train_dict=train_result, valid_dict=valid_result)
-            # update_tensorboard_image(tb_writer, epoch, train_result)
-            # tb_writer.flush()
+            # self.tb_writer.flush()
 
     def save_models(self, epoch):
         torch.save(self.rgb_cnn.state_dict(),
