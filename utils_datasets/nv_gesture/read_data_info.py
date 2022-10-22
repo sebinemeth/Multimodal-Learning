@@ -58,7 +58,7 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
     video_folders, annotations = get_annot_and_video_paths(annotation_file_path, root_path=config_dict["dataset_path"])
 
     data_info_list = list()
-    for i in tqdm(range(len(video_folders)), desc="NV Dataset - {}".format(subset_type.value)):
+    for i in tqdm(range(len(video_folders)), desc="NV Dataset - {}".format(subset_type.name)):
         # if i % 100 == 0:
         #     print('dataset loading [{}/{}]'.format(i, len(video_names)))
 

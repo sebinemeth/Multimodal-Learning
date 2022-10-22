@@ -41,9 +41,7 @@ class NV(data.Dataset):
         path = self.data_info_list[index]['video_folder']
 
         frame_indices = self.data_info_list[index]['frame_indices']
-        image_depth_list = image_list_loader(path, frame_indices, self.modality, self.img_size)
-        rgb_images = [rgb_depth[0] for rgb_depth in image_depth_list]
-        depth_images = [rgb_depth[1] for rgb_depth in image_depth_list]
+        rgb_images, depth_images = image_list_loader(path, frame_indices, self.modality, self.img_size)
 
         if self.spatial_transform is not None:
             self.spatial_transform.randomize_parameters()
