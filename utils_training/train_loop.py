@@ -176,6 +176,6 @@ class TrainLoop(object):
 
     @staticmethod
     def regularizer(loss1, loss2, beta=2):
-        if loss1 - loss2 > 0:
+        if loss1 > loss2:
             return (beta * math.exp(loss1 - loss2)) - 1
         return 0.0
