@@ -170,7 +170,6 @@ class Scale(object):
         else:
             return img.resize(self.size, self.interpolation)
 
-
     def randomize_parameters(self):
         pass
 

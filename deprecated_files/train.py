@@ -18,7 +18,7 @@ from i3dpt import *
 from validation import *
 import torch.nn.functional as F
 
-data_path = "./datasets/senz3d_dataset/acquisitions"
+data_path = "../datasets/senz3d_dataset/acquisitions"
 # train_path = "./datasets/senz3d_dataset"
 # test_path = "./datasets/senz3d_dataset"
 # train_path = "/home/sagar/data/senz3d_dataset/dataset/train/"
@@ -145,7 +145,7 @@ def main():
     # Initialize Tensorboard
 
     tb_writer = initialize_tensorboard(
-        log_dir="./tensorboard_logs/",
+        log_dir="../tensorboard_logs/",
         common_name="experiment{}".format(args.save_as))
 
     train_videos_path = []
