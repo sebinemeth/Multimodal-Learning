@@ -1,50 +1,62 @@
 import torch
+import math
+import os
+import numpy as np
 from tqdm import tqdm
+
+from utils.tensorboard_utils import update_tensorboard_train, update_tensorboard_val, update_tensorboard_image
+from utils_training.validation import validation_step
 
 
 class TrainLoop(object):
-    def __init__(self, config_dict: dict):
-        self.config_dict = config_dict
-
-    def run_loop(self, args,
-                 model_rgb,
-                 model_depth,
-                 optimizer_rgb,
-                 optimizer_depth,
+    def __init__(self,
+                 config_dict: dict,
+                 rgb_cnn: torch.nn.Module,
+                 depth_cnn: torch.nn.Module,
+                 rgb_optimizer,
+                 depth_optimizer,
+                 criterion,
                  train_loader,
                  valid_loader,
-                 criterion,
-                 regularizer,
-                 epoch,
-                 tb_writer,
-                 tq):
-        device = args.device
-        model_rgb.train()
-        model_depth.train()
-        rgb_losses = []
-        depth_losses = []
-        rgb_regularized_losses = []
-        depth_regularized_losses = []
-        train_result = {}
+                 tb_writer):
+        self.config_dict = config_dict
+        self.rgb_cnn = rgb_cnn
+        self.depth_cnn = depth_cnn
+        self.rgb_optimizer = rgb_optimizer
+        self.depth_optimizer = depth_optimizer
+        self.criterion = criterion
+        self.train_loader = train_loader
+        self.valid_loader = valid_loader
+        self.tb_writer = tb_writer
+
+    def run_loop(self):
+        rgb_losses = list()
+        depth_losses = list()
+        rgb_regularized_losses = list()
+        depth_regularized_losses = list()
+        train_result = dict()
 
         rgb_correct = 0
         depth_correct = 0
         total = 0
+        tb_step = 0
 
-        tb_batch_freq = 20
+        for epoch in range(self.config_dict["epoch"]):
+            self.rgb_cnn.train()
+            self.depth_cnn.train()
 
-        for epoch in range(n_epoch):
-            tq = tqdm(total=(len(train_loader)))
-            tq.set_description('ep {}, {}'.format(epoch, lr))
-            for batch_idx, (rgb, depth, y) in enumerate(train_loader):
+            tq = tqdm(total=(len(self.train_loader)))
+            tq.set_description('ep {}, {}'.format(epoch, self.config_dict["learning_rate"]))
+            for batch_idx, (rgb, depth, y) in enumerate(self.train_loader):
                 # distribute data to device
-                rgb, depth, y = rgb.to(device), depth.to(device), y.to(device)  # F.one_hot(y).to(device)
+                rgb, depth = rgb.to(self.config_dict["device"]), depth.to(self.config_dict["device"])
+                y = y.to(self.config_dict["device"])
 
-                optimizer_rgb.zero_grad()
-                optimizer_depth.zero_grad()
+                self.rgb_optimizer.zero_grad()
+                self.depth_optimizer.zero_grad()
 
-                rgb_out, rgb_feature_map = model_rgb(rgb)
-                depth_out, depth_feature_map = model_depth(depth)
+                rgb_out, rgb_feature_map = self.rgb_cnn(rgb)
+                depth_out, depth_feature_map = self.depth_cnn(depth)
 
                 rgb_feature_map = rgb_feature_map.view(rgb_feature_map.shape[0], rgb_feature_map.shape[1], -1)
                 rgb_feature_map_T = torch.transpose(rgb_feature_map, 1, 2)
@@ -72,12 +84,12 @@ class TrainLoop(object):
 
                 # loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
                 # loss_depth = criterion(depth_out, torch.max(y, 1)[1])
-                loss_rgb = criterion(rgb_out, y)  # index of the max log-probability
-                loss_depth = criterion(depth_out, y)
+                loss_rgb = self.criterion(rgb_out, y)  # index of the max log-probability
+                loss_depth = self.criterion(depth_out, y)
                 # print("RGB loss :: {}".format(loss_rgb))
                 # print("depth loss :: {}".format(loss_depth))
 
-                focal_reg_param = regularizer(loss_rgb, loss_depth)
+                focal_reg_param = self.regularizer(loss_rgb, loss_depth)
 
                 """
                 norm || x ||
@@ -95,14 +107,14 @@ class TrainLoop(object):
                 ssa_loss_depth = focal_reg_param * corr_diff_depth
 
                 # total loss
-                reg_loss_rgb = loss_rgb + (_lambda * ssa_loss_rgb)
-                reg_loss_depth = loss_depth + (_lambda * ssa_loss_depth)
+                reg_loss_rgb = loss_rgb + (self.config_dict["lambda"] * ssa_loss_rgb)
+                reg_loss_depth = loss_depth + (self.config_dict["lambda"] * ssa_loss_depth)
 
                 reg_loss_rgb.backward(retain_graph=True)
                 reg_loss_depth.backward()
 
-                optimizer_rgb.step()
-                optimizer_depth.step()
+                self.rgb_optimizer.step()
+                self.depth_optimizer.step()
 
                 rgb_losses.append(loss_rgb.item())
                 depth_losses.append(loss_depth.item())
@@ -128,7 +140,7 @@ class TrainLoop(object):
                                acc_rgb='{:.1f}%'.format(acc_rgb * 100),
                                acc_depth='{:.1f}%'.format(acc_depth * 100))
 
-                if batch_idx % tb_batch_freq == 0:
+                if batch_idx % self.config_dict["tb_batch_freq"] == 0:
                     mean_rgb = np.mean(rgb_losses)
                     mean_reg_rgb = np.mean(rgb_regularized_losses)
                     mean_depth = np.mean(depth_losses)
@@ -136,22 +148,21 @@ class TrainLoop(object):
                     train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "acc_rgb": acc_rgb,
                                          "loss_depth": mean_depth, "loss_reg_depth": mean_reg_depth,
                                          "acc_depth": acc_depth})
-                    update_tensorboard_train(tb_writer=tb_writer, epoch=tb_step, train_dict=train_result)
-                    update_tensorboard_image(tb_writer, tb_step, train_result)
+                    update_tensorboard_train(tb_writer=self.tb_writer, epoch=tb_step, train_dict=train_result)
+                    update_tensorboard_image(self.tb_writer, tb_step, train_result)
 
                     tb_step += 1
 
-                    rgb_losses = []
-                    depth_losses = []
-                    rgb_regularized_losses = []
-                    depth_regularized_losses = []
+                    rgb_losses = list()
+                    depth_losses = list()
+                    rgb_regularized_losses = list()
+                    depth_regularized_losses = list()
 
-            valid_result = validation(model_rgb=model_rgb, model_depth=model_depth, criterion=criterion,
-                                      valid_loader=valid_loader, num_classes=num_classes)
-            update_tensorboard_val(tb_writer=tb_writer, epoch=epoch, valid_dict=valid_result)
+            valid_result = validation_step(model_rgb=self.rgb_cnn, model_depth=self.depth_cnn, criterion=self.criterion,
+                                           valid_loader=self.valid_loader)
+            update_tensorboard_val(tb_writer=self.tb_writer, epoch=epoch, valid_dict=valid_result)
+            self.save_models(epoch)
 
-            torch.save(model_rgb.state_dict(), os.path.join(model_save_dir, "model_rgb_{}.pt".format(epoch)))
-            torch.save(model_depth.state_dict(), os.path.join(model_save_dir, "model_depth_{}.pt".format(epoch)))
             # mean_rgb = np.mean(rgb_losses)
             # mean_reg_rgb = np.mean(rgb_regularized_losses)
             # mean_depth = np.mean(depth_losses)
@@ -163,3 +174,15 @@ class TrainLoop(object):
             # update_tensorboard(tb_writer=tb_writer, epoch=epoch, train_dict=train_result, valid_dict=valid_result)
             # update_tensorboard_image(tb_writer, epoch, train_result)
             # tb_writer.flush()
+
+    def save_models(self, epoch):
+        torch.save(self.rgb_cnn.state_dict(),
+                   os.path.join(self.config_dict["model_save_dir"], "model_rgb_{}.pt".format(epoch)))
+        torch.save(self.depth_cnn.state_dict(),
+                   os.path.join(self.config_dict["model_save_dir"], "model_depth_{}.pt".format(epoch)))
+
+    @staticmethod
+    def regularizer(loss1, loss2, beta=2):
+        if loss1 - loss2 > 0:
+            return (beta * math.exp(loss1 - loss2)) - 1
+        return 0.0

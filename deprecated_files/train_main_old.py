@@ -2,16 +2,16 @@ import torch.utils.data as data
 import torch.utils.data
 from tqdm import tqdm
 
-from spatial_transforms import Compose, ToTensor, Normalize, Scale
+from utils_transforms.spatial_transforms import Compose, ToTensor, Normalize, Scale
 
 from utils_datasets.nv_gesture.nv_dataset import NV
-from util import *
-from i3dpt import *
-from validation import *
+from utils.tensorboard_utils import *
+from models.i3dpt import *
+from utils_training.validation import *
 
-video_path = "./datasets/nvGesture"
-train_annotation_path = "./datasets/nvGesture/nvgesture_train_correct_cvpr2016_v2.lst"
-valid_annotation_path = "./datasets/nvGesture/nvgesture_test_correct_cvpr2016_v2.lst"
+video_path = "../datasets/nvGesture"
+train_annotation_path = "../datasets/nvGesture/nvgesture_train_correct_cvpr2016_v2.lst"
+valid_annotation_path = "../datasets/nvGesture/nvgesture_test_correct_cvpr2016_v2.lst"
 model_save_dir = "./saved_models/model"
 # train_path = "./datasets/senz3d_dataset"
 # test_path = "./datasets/senz3d_dataset"

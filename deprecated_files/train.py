@@ -1,22 +1,11 @@
-import os
-import torchvision
-import argparse
-import numpy as np
 import torch.utils.data as data
-import torch.backends.cudnn as cudnn
-import torch.nn.functional as F
 import torch.utils.data
-from torch.optim import Adam
 from tqdm import tqdm
-import math
-import random
 
-from model import CNN3D
 from dataset import Senz3dDataset
-from util import *
-from i3dpt import *
-from validation import *
-import torch.nn.functional as F
+from utils.tensorboard_utils import *
+from models.i3dpt import *
+from utils_training.validation import *
 
 data_path = "../datasets/senz3d_dataset/acquisitions"
 # train_path = "./datasets/senz3d_dataset"

@@ -2,7 +2,7 @@ from torch.utils.data import DataLoader
 
 from utils_datasets.nv_gesture.nv_dataset import NV
 from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType
-from spatial_transforms import Compose, ToTensor, Normalize, Scale
+from utils_transforms.spatial_transforms import Compose, ToTensor, Normalize, Scale
 
 
 def get_loaders(config_dict):

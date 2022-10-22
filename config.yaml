@@ -5,9 +5,10 @@ ckp_model_path:
 
 epoch: 10
 learning_rate: 1e-4
-# lambda = 0.05  # 50 x 10^-3
+lambda: 0.05  # 50 x 10^-3
 num_of_classes: 25
 only_with_gesture: True
+tb_batch_freq: 20
 
 img_x: 224
 img_y: 224

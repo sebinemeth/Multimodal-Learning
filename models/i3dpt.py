@@ -1,9 +1,9 @@
 import math
 import os
-
-import numpy as np
 import torch
-from torch.nn import ReplicationPad3d
+import numpy as np
+
+from utils_datasets.nv_gesture.nv_utils import ModalityType
 
 
 # https://github.com/hassony2/kinetics_i3d_pytorch/blob/master/src/i3dpt.py
@@ -160,21 +160,21 @@ class Mixed(torch.nn.Module):
         return out
 
 
-class I3D(torch.nn.Module):
+class Inception3D(torch.nn.Module):
     def __init__(self,
                  num_classes,
-                 modality='rgb',
+                 modality: ModalityType,
                  dropout_prob=0,
                  name='inception'):
-        super(I3D, self).__init__()
+        super(Inception3D, self).__init__()
 
         self.name = name
         self.num_classes = num_classes
-        if modality == 'rgb':
+        if modality == ModalityType.RGB:
             in_channels = 3
-        elif modality == 'flow':
-            in_channels = 2
-        elif modality == 'depth':
+        # elif modality == 'flow':
+        #     in_channels = 2
+        elif modality == ModalityType.DEPTH:
             in_channels = 1
         else:
             raise ValueError(

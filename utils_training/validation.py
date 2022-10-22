@@ -3,12 +3,12 @@ import torch
 import numpy as np
 
 
-def validation(model_rgb: nn.Module, model_depth: nn.Module, criterion, valid_loader, num_classes):
+def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, valid_loader):
     with torch.no_grad():
         model_rgb.eval()
         model_depth.eval()
-        rgb_loss = []
-        depth_loss = []
+        rgb_loss = list()
+        depth_loss = list()
         rgb_correct = 0
         depth_correct = 0
         total = 0
