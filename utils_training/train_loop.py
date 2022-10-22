@@ -89,7 +89,8 @@ class TrainLoop(object):
                 # print("RGB loss :: {}".format(loss_rgb))
                 # print("depth loss :: {}".format(loss_depth))
 
-                focal_reg_param = self.regularizer(loss_rgb, loss_depth)
+                rgb_focal_reg_param = self.regularizer(loss_rgb, loss_depth)
+                depth_focal_reg_param = self.regularizer(loss_depth, loss_rgb)
 
                 """
                 norm || x ||
@@ -103,8 +104,8 @@ class TrainLoop(object):
                 corr_diff_depth = torch.sqrt(torch.sum(torch.sub(depth_corr, rgb_corr) ** 2))
 
                 # loss (m,n)
-                ssa_loss_rgb = focal_reg_param * corr_diff_rgb
-                ssa_loss_depth = focal_reg_param * corr_diff_depth
+                ssa_loss_rgb = rgb_focal_reg_param * corr_diff_rgb
+                ssa_loss_depth = depth_focal_reg_param * corr_diff_depth
 
                 # total loss
                 reg_loss_rgb = loss_rgb + (self.config_dict["lambda"] * ssa_loss_rgb)
