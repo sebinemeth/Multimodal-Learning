@@ -17,7 +17,7 @@ config_dict = get_config_dict()
 # Detect devices
 use_cuda = torch.cuda.is_available()  # check if GPU exists
 device = torch.device("cuda" if use_cuda else "cpu")  # use CPU or GPU
-write_log("init", device, title="used device")
+write_log("init", str(device), title="used device")
 config_dict["device"] = device
 
 # Initialize Tensorboard
