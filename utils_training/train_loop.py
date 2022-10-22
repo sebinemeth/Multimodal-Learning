@@ -137,6 +137,7 @@ class TrainLoop(object):
                 tq.set_postfix(RGB_loss='{:.2f}'.format(np.mean(rgb_losses)),
                                DEPTH_loss='{:.2f}'.format(np.mean(depth_losses)),
                                RGB_reg_loss='{:.2f}'.format(np.mean(rgb_regularized_losses)),
+                               DEPTH_reg_loss='{:.2f}'.format(np.mean(depth_regularized_losses)),
                                RGB_acc='{:.1f}%'.format(acc_rgb * 100),
                                DEPTH_acc='{:.1f}%'.format(acc_depth * 100))
 
