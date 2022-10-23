@@ -28,7 +28,7 @@ class NV(data.Dataset):
         self.temporal_transform = temporal_transform
         self.modality = modality
         self.sample_duration = config_dict["sample_duration"]
-        self.img_size = config_dict["resized_img_x"], config_dict["resized_img_x"]
+        self.img_size = config_dict["img_x"], config_dict["img_y"]
 
     def __getitem__(self, index):
         """
