@@ -30,20 +30,20 @@ class TrainLoop(object):
         self.tb_writer = tb_writer
 
     def run_loop(self):
-        rgb_losses = list()
-        depth_losses = list()
-        rgb_regularized_losses = list()
-        depth_regularized_losses = list()
-        train_result = dict()
-
-        rgb_correct = 0
-        depth_correct = 0
-        total = 0
-        tb_step = 0
-
         for epoch in range(self.config_dict["epoch"]):
             self.rgb_cnn.train()
             self.depth_cnn.train()
+
+            rgb_losses = list()
+            depth_losses = list()
+            rgb_regularized_losses = list()
+            depth_regularized_losses = list()
+            train_result = dict()
+
+            rgb_correct = 0
+            depth_correct = 0
+            total = 0
+            tb_step = 0
 
             tq = tqdm(total=(len(self.train_loader)))
             tq.set_description('ep {}, {}'.format(epoch, self.config_dict["learning_rate"]))
