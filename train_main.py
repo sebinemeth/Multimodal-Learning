@@ -1,6 +1,7 @@
-import torch
 import os
+import torch
 from torch.utils.tensorboard import SummaryWriter
+from torchsummary import summary
 
 from utils.log_maker import start_log_maker, write_log
 from utils.arg_parser import get_config_dict
@@ -30,9 +31,9 @@ config_dict["model_save_dir"] = model_save_dir
 train_loader, valid_loader = get_loaders(config_dict)
 rgb_cnn, depth_cnn = get_models(config_dict)
 
-# from torchsummary import summary
-# summary(depth_cnn, input_size=(1, 32, 224, 224))  # (batch size, chanel, duration, width, height)
-# exit()
+if config_dict["print_summary"]:
+    summary(rgb_cnn, input_size=(3, 32, 224, 224))  # (batch size, chanel, duration, width, height)
+    summary(depth_cnn, input_size=(1, 32, 224, 224))  # (batch size, chanel, duration, width, height)
 
 # optimize all cnn parameters
 rgb_optimizer = torch.optim.Adam(rgb_cnn.parameters(), lr=config_dict["learning_rate"])

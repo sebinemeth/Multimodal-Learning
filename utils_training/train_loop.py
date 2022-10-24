@@ -64,31 +64,12 @@ class TrainLoop(object):
 
                 depth_feature_map = depth_feature_map.view(depth_feature_map.shape[0], depth_feature_map.shape[1], -1)
                 depth_feature_map_T = torch.transpose(depth_feature_map, 1, 2)
-                # print("RGB fmap shape :: {}".format(rgb_feature_map.shape))
-                # print("RGB fmap shape T :: {}".format(rgb_feature_map_T.shape))
-                # print("depth fmap shape :: {}".format(depth_feature_map.shape))
-                # print("depth fmap shape T:: {}".format(depth_feature_map_T.shape))
-                # torch.save(rgb_feature_map_T, "rgbFeatureMapT.pt")
-
-                rgb_sq_ft_map = rgb_feature_map_T.squeeze()
-                rgb_avg_sq_ft_map = torch.mean(rgb_sq_ft_map, 0)
-                depth_sq_ft_map = depth_feature_map_T.squeeze()
-                depth_avg_sq_ft_map = torch.mean(depth_sq_ft_map, 0)
 
                 rgb_corr = torch.bmm(rgb_feature_map_T, rgb_feature_map)
                 depth_corr = torch.bmm(depth_feature_map_T, depth_feature_map)
-                # print("RGB correlation ::  {}".format(rgb_corr.shape))
-                # print("depth correlation :: {}".format(depth_corr.shape))
 
-                # print("RGB  ::  {}".format(rgb_out.shape))
-                # print("y :: {}".format(y))
-
-                # loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
-                # loss_depth = criterion(depth_out, torch.max(y, 1)[1])
                 loss_rgb = self.criterion(rgb_out, y)  # index of the max log-probability
                 loss_depth = self.criterion(depth_out, y)
-                # print("RGB loss :: {}".format(loss_rgb))
-                # print("depth loss :: {}".format(loss_depth))
 
                 rgb_focal_reg_param = self.regularizer(loss_rgb, loss_depth)
                 depth_focal_reg_param = self.regularizer(loss_depth, loss_rgb)
@@ -105,12 +86,12 @@ class TrainLoop(object):
                 corr_diff_depth = torch.sqrt(torch.sum(torch.sub(depth_corr, rgb_corr) ** 2))
 
                 # loss (m,n)
-                ssa_loss_rgb = rgb_focal_reg_param * corr_diff_rgb
-                ssa_loss_depth = depth_focal_reg_param * corr_diff_depth
+                ssa_loss_rgb = self.config_dict["lambda"] * rgb_focal_reg_param * corr_diff_rgb
+                ssa_loss_depth = self.config_dict["lambda"] * depth_focal_reg_param * corr_diff_depth
 
                 # total loss
-                reg_loss_rgb = loss_rgb + (self.config_dict["lambda"] * ssa_loss_rgb)
-                reg_loss_depth = loss_depth + (self.config_dict["lambda"] * ssa_loss_depth)
+                reg_loss_rgb = loss_rgb + ssa_loss_rgb
+                reg_loss_depth = loss_depth + ssa_loss_depth
 
                 reg_loss_rgb.backward(retain_graph=True)
                 reg_loss_depth.backward()
@@ -120,8 +101,8 @@ class TrainLoop(object):
 
                 rgb_losses.append(loss_rgb.item())
                 depth_losses.append(loss_depth.item())
-                rgb_regularized_losses.append(reg_loss_rgb.item())
-                depth_regularized_losses.append(reg_loss_depth.item())
+                rgb_regularized_losses.append(ssa_loss_rgb.item())
+                depth_regularized_losses.append(ssa_loss_depth.item())
 
                 total += y.size(0)
 
@@ -135,14 +116,18 @@ class TrainLoop(object):
                 acc_depth = depth_correct / total
 
                 tq.update(1)
-                tq.set_postfix(RGB_loss='{:.2f}'.format(np.mean(rgb_losses)),
-                               DEPTH_loss='{:.2f}'.format(np.mean(depth_losses)),
-                               RGB_reg_loss='{:.2f}'.format(np.mean(rgb_regularized_losses)),
-                               DEPTH_reg_loss='{:.2f}'.format(np.mean(depth_regularized_losses)),
+                tq.set_postfix(RGB_loss='{:.2f}'.format(rgb_losses[-1]),
+                               DEPTH_loss='{:.2f}'.format(depth_losses[-1]),
+                               RGB_reg_loss='{:.2f}'.format(rgb_regularized_losses[-1]),
+                               DEPTH_reg_loss='{:.2f}'.format(depth_regularized_losses[-1]),
                                RGB_acc='{:.1f}%'.format(acc_rgb * 100),
                                DEPTH_acc='{:.1f}%'.format(acc_depth * 100))
 
-                if batch_idx == 0:
+                if self.config_dict["write_feature_map"] and batch_idx == 0:
+                    rgb_sq_ft_map = rgb_feature_map_T.squeeze()
+                    rgb_avg_sq_ft_map = torch.mean(rgb_sq_ft_map, 0)
+                    depth_sq_ft_map = depth_feature_map_T.squeeze()
+                    depth_avg_sq_ft_map = torch.mean(depth_sq_ft_map, 0)
                     train_result.update({"rgb_ft_map": rgb_avg_sq_ft_map, "depth_ft_map": depth_avg_sq_ft_map})
 
                 if batch_idx % self.config_dict["tb_batch_freq"] == 0:

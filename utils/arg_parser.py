@@ -69,6 +69,9 @@ def get_config_dict():
     req.add_argument("--name", default="test", required=True, help="name of the training")
     opt.add_argument("--config_yaml", default="./config.yaml", type=str2str, help="path to the config yaml file")
 
+    opt.add_argument("--print_summary", default=False, type=str2bool, help="training only with gestures")
+    opt.add_argument("--write_feature_map", default=False, type=str2bool, help="training only with gestures")
+
     # Training parameters
     opt.add_argument("--epoch", default=None, type=str2int, help="number of epochs")
     opt.add_argument("--learning_rate", default=None, type=str2float, help="starting value of learning rate")
