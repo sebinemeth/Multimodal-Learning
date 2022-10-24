@@ -1,6 +1,7 @@
-from torch import nn
 import torch
+from torch import nn
 import numpy as np
+from tqdm import tqdm
 
 
 def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, valid_loader):
@@ -15,10 +16,13 @@ def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, val
 
         use_cuda = torch.cuda.is_available()  # check if GPU exists
         device = torch.device("cuda" if use_cuda else "cpu")  # use CPU or GPU
+
+        tq = tqdm(total=(len(valid_loader)))
+        tq.set_description('Validation')
         for batch_idx, (rgb, depth, y) in enumerate(valid_loader):
             rgb, depth, y = rgb.to(device), depth.to(device), y.to(device)
-            rgb_out, rgb_feature_map = model_rgb(rgb)
-            depth_out, depth_feature_map = model_depth(depth)
+            rgb_out, _ = model_rgb(rgb)
+            depth_out, _ = model_depth(depth)
             # loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
             # loss_depth = criterion(depth_out, torch.max(y, 1)[1])
             loss_rgb = criterion(rgb_out, y)  # index of the max log-probability
@@ -33,6 +37,15 @@ def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, val
 
             _, depth_predicted = depth_out.max(1)
             depth_correct += depth_predicted.eq(y).sum().item()
+
+            acc_rgb = rgb_correct / total
+            acc_depth = depth_correct / total
+
+            tq.update(1)
+            tq.set_postfix(RGB_loss='{:.2f}'.format(np.mean(rgb_loss)),
+                           DEPTH_loss='{:.2f}'.format(np.mean(depth_loss)),
+                           RGB_acc='{:.1f}%'.format(acc_rgb * 100),
+                           DEPTH_acc='{:.1f}%'.format(acc_depth * 100))
 
         valid_rgb_acc = rgb_correct / total
         valid_depth_acc = depth_correct / total
