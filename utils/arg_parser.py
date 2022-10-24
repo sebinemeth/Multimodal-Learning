@@ -86,8 +86,10 @@ def get_config_dict():
     opt.add_argument("--dataset_path", default=None, type=str2str, help="path to dataset folder")
     opt.add_argument("--train_annotation_path", default=None, type=str2str, help="")
     opt.add_argument("--val_annotation_path", default=None, type=str2str, help="")
-    opt.add_argument("--ckp_model_path", default=None, type=str2str,
-                     help="path to the model in case of continue training")
+    opt.add_argument("--rgb_ckp_model_path", default=None, type=str2str,
+                     help="path to rgb model in case of continue training")
+    opt.add_argument("--depth_ckp_model_path", default=None, type=str2str,
+                     help="path to depth model in case of continue training")
 
     args = parser.parse_args()
 
