@@ -46,6 +46,9 @@ train_loop = TrainLoop(config_dict,
                        tb_writer)
 try:
     train_loop.run_loop()
-except (KeyboardInterrupt, Exception) as e:
+except KeyboardInterrupt:
+    write_log("training", "training is stopped by keyboard interrupt", title="error", print_out=True, color="red")
+except Exception as e:
     write_log("training", "training is stopped with error:\n{}".format(e), title="error", print_out=True, color="red")
+finally:
     train_loop.save_models("end")
