@@ -1,14 +1,16 @@
 dataset_path: "./datasets/nvGesture"
 train_annotation_path: "./datasets/nvGesture/nvgesture_train_correct_cvpr2016_v2.lst"
 val_annotation_path: "./datasets/nvGesture/nvgesture_test_correct_cvpr2016_v2.lst"
-ckp_model_path:
+rgb_ckp_model_path:
+depth_ckp_model_path:
 
 epoch: 10
 learning_rate: 0.0001
 lambda: 0.05  # 50 x 10^-3
+dropout_prob: 0
 num_of_classes: 25
 only_with_gesture: True
-tb_batch_freq: 20
+tb_batch_freq: 100
 
 img_x: 224
 img_y: 224

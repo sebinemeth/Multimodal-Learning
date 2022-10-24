@@ -6,9 +6,7 @@ from utils.log_maker import start_log_maker, write_log
 from utils.arg_parser import get_config_dict
 from utils_training.get_loaders import get_loaders
 from utils_training.train_loop import TrainLoop
-from utils_datasets.nv_gesture.nv_utils import ModalityType
-
-from models.i3dpt import Inception3D
+from utils_training.get_models import get_models
 
 start_log_maker()
 config_dict = get_config_dict()
@@ -30,16 +28,7 @@ os.makedirs(model_save_dir, exist_ok=True)
 config_dict["model_save_dir"] = model_save_dir
 
 train_loader, valid_loader = get_loaders(config_dict)
-
-rgb_cnn = Inception3D(num_classes=config_dict["num_of_classes"],
-                      modality=ModalityType.RGB,
-                      dropout_prob=0,
-                      name='inception').to(device)
-
-depth_cnn = Inception3D(num_classes=config_dict["num_of_classes"],
-                        modality=ModalityType.DEPTH,
-                        dropout_prob=0,
-                        name='inception').to(device)
+rgb_cnn, depth_cnn = get_models(config_dict)
 
 # optimize all cnn parameters
 rgb_optimizer = torch.optim.Adam(rgb_cnn.parameters(), lr=config_dict["learning_rate"])
@@ -55,4 +44,8 @@ train_loop = TrainLoop(config_dict,
                        train_loader,
                        valid_loader,
                        tb_writer)
-train_loop.run_loop()
+try:
+    train_loop.run_loop()
+except Exception as e:
+    write_log("training", "training is stopped with error:\n{}".format(e), title="error", print_out=True, color="red")
+    train_loop.save_models("end")

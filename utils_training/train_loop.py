@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from utils.tensorboard_utils import update_tensorboard_train, update_tensorboard_val, update_tensorboard_image
 from utils_training.validation import validation_step
+from utils.log_maker import  write_log
 
 
 class TrainLoop(object):
@@ -167,9 +168,8 @@ class TrainLoop(object):
             update_tensorboard_val(tb_writer=self.tb_writer, global_step=tb_step, valid_dict=valid_result)
             self.save_models(epoch)
 
-            # self.tb_writer.flush()
-
     def save_models(self, epoch):
+        write_log("training", "models are saved", title="save models")
         torch.save(self.rgb_cnn.state_dict(),
                    os.path.join(self.config_dict["model_save_dir"], "model_rgb_{}.pt".format(epoch)))
         torch.save(self.depth_cnn.state_dict(),
