@@ -1,7 +1,4 @@
-import math
-import os
 import torch
-import numpy as np
 
 from utils_datasets.nv_gesture.nv_utils import ModalityType
 
@@ -9,11 +6,11 @@ from utils_datasets.nv_gesture.nv_utils import ModalityType
 # https://github.com/hassony2/kinetics_i3d_pytorch/blob/master/src/i3dpt.py
 
 def get_padding_shape(filter_shape, stride):
-    def _pad_top_bottom(filter_dim, stride_val):
-        pad_along = max(filter_dim - stride_val, 0)
-        pad_top = pad_along // 2
-        pad_bottom = pad_along - pad_top
-        return pad_top, pad_bottom
+    def _pad_top_bottom(_filter_dim, _stride_val):
+        pad_along = max(_filter_dim - _stride_val, 0)
+        _pad_top = pad_along // 2
+        _pad_bottom = pad_along - _pad_top
+        return _pad_top, _pad_bottom
 
     padding_shape = []
     for filter_dim, stride_val in zip(filter_shape, stride):
@@ -178,7 +175,7 @@ class Inception3D(torch.nn.Module):
             in_channels = 1
         else:
             raise ValueError(
-                '{} not among known modalities [rgb|flow]'.format(modality))
+                '{} not among known modalities [rgb|flow]'.format(modality.name))
         self.modality = modality
 
         conv3d_1a_7x7 = Unit3Dpy(
@@ -243,37 +240,21 @@ class Inception3D(torch.nn.Module):
 
     def forward(self, inp):
         # Preprocessing
-        # print("input to model : {}".format(inp.shape))
         out = self.conv3d_1a_7x7(inp)
-        # print("conv3d_1a_7x7 output : {}".format(out.shape))
         out = self.maxPool3d_2a_3x3(out)
-        # print("maxPool3d_2a_3x3 output : {}".format(out.shape))
         out = self.conv3d_2b_1x1(out)
-        # print("conv3d_2b_1x1 output : {}".format(out.shape))
         out = self.conv3d_2c_3x3(out)
-        # print("conv3d_2c_3x3 output : {}".format(out.shape))
         out = self.maxPool3d_3a_3x3(out)
-        # print("maxPool3d_3a_3x3 output : {}".format(out.shape))
         out = self.mixed_3b(out)
-        # print("mixed_3b output : {}".format(out.shape))
         out = self.mixed_3c(out)
-        # print("mixed_3c output : {}".format(out.shape))
         out = self.maxPool3d_4a_3x3(out)
-        # print("maxPool3d_4a_3x3 output : {}".format(out.shape))
         out = self.mixed_4b(out)
-        # print("mixed_4b output : {}".format(out.shape))
         out = self.mixed_4c(out)
-        # print("mixed_4c output : {}".format(out.shape))
         out = self.mixed_4d(out)
-        # print("mixed_4d output : {}".format(out.shape))
         out = self.mixed_4e(out)
-        # print("mixed_4e output : {}".format(out.shape))
         out = self.mixed_4f(out)
-        # print("mixed_4f output : {}".format(out.shape))
         out = self.maxPool3d_5a_2x2(out)
-        # print("maxPool3d_5a_2x2 output : {}".format(out.shape))
         out = self.mixed_5b(out)
-        # print("mixed_5b output : {}".format(out.shape))
         out = self.mixed_5c(out)
         feature_map = out
         #####################################################################################
@@ -284,179 +265,14 @@ class Inception3D(torch.nn.Module):
 
         #####################################################################################
 
-        # print("mixed_5c output : {}".format(out.shape))
         out = self.avg_pool(out)
-        # print("avg_pool output : {}".format(out.shape))
         out = self.dropout(out)
-        # print("dropout output : {}".format(out.shape))
         out = self.conv3d_0c_1x1(out)
-        # print("conv3d_0c_1x1 output : {}".format(out.shape))
         out = out.squeeze(3)
         out = out.squeeze(3)
         out = out.mean(2)
         out_logits = out
-        # print("out_logits : {}".format(out_logits.shape))
         out = self.softmax(out_logits)
-        # print("softmax : {}".format(out.shape))
         return out, correlation_matrix
 
-    def load_tf_weights(self, sess):
-        state_dict = {}
-        if self.modality == 'rgb':
-            prefix = 'RGB/inception_i3d'
-        elif self.modality == 'flow':
-            prefix = 'Flow/inception_i3d'
-        elif self.modality == 'depth':
-            prefix = 'Depth/inception_i3d'
-        load_conv3d(state_dict, 'conv3d_1a_7x7', sess,
-                    os.path.join(prefix, 'Conv3d_1a_7x7'))
-        load_conv3d(state_dict, 'conv3d_2b_1x1', sess,
-                    os.path.join(prefix, 'Conv3d_2b_1x1'))
-        load_conv3d(state_dict, 'conv3d_2c_3x3', sess,
-                    os.path.join(prefix, 'Conv3d_2c_3x3'))
 
-        load_mixed(state_dict, 'mixed_3b', sess,
-                   os.path.join(prefix, 'Mixed_3b'))
-        load_mixed(state_dict, 'mixed_3c', sess,
-                   os.path.join(prefix, 'Mixed_3c'))
-        load_mixed(state_dict, 'mixed_4b', sess,
-                   os.path.join(prefix, 'Mixed_4b'))
-        load_mixed(state_dict, 'mixed_4c', sess,
-                   os.path.join(prefix, 'Mixed_4c'))
-        load_mixed(state_dict, 'mixed_4d', sess,
-                   os.path.join(prefix, 'Mixed_4d'))
-        load_mixed(state_dict, 'mixed_4e', sess,
-                   os.path.join(prefix, 'Mixed_4e'))
-        # Here goest to 0.1 max error with tf
-        load_mixed(state_dict, 'mixed_4f', sess,
-                   os.path.join(prefix, 'Mixed_4f'))
-
-        load_mixed(
-            state_dict,
-            'mixed_5b',
-            sess,
-            os.path.join(prefix, 'Mixed_5b'),
-            fix_typo=True)
-        load_mixed(state_dict, 'mixed_5c', sess,
-                   os.path.join(prefix, 'Mixed_5c'))
-        load_conv3d(
-            state_dict,
-            'conv3d_0c_1x1',
-            sess,
-            os.path.join(prefix, 'Logits', 'Conv3d_0c_1x1'),
-            bias=True,
-            bn=False)
-        self.load_state_dict(state_dict)
-
-
-def get_conv_params(sess, name, bias=False):
-    # Get conv weights
-    conv_weights_tensor = sess.graph.get_tensor_by_name(
-        os.path.join(name, 'w:0'))
-    if bias:
-        conv_bias_tensor = sess.graph.get_tensor_by_name(
-            os.path.join(name, 'b:0'))
-        conv_bias = sess.run(conv_bias_tensor)
-    conv_weights = sess.run(conv_weights_tensor)
-    conv_shape = conv_weights.shape
-
-    kernel_shape = conv_shape[0:3]
-    in_channels = conv_shape[3]
-    out_channels = conv_shape[4]
-
-    conv_op = sess.graph.get_operation_by_name(
-        os.path.join(name, 'convolution'))
-    padding_name = conv_op.get_attr('padding')
-    padding = _get_padding(padding_name, kernel_shape)
-    all_strides = conv_op.get_attr('strides')
-    strides = all_strides[1:4]
-    conv_params = [
-        conv_weights, kernel_shape, in_channels, out_channels, strides, padding
-    ]
-    if bias:
-        conv_params.append(conv_bias)
-    return conv_params
-
-
-def get_bn_params(sess, name):
-    moving_mean_tensor = sess.graph.get_tensor_by_name(
-        os.path.join(name, 'moving_mean:0'))
-    moving_var_tensor = sess.graph.get_tensor_by_name(
-        os.path.join(name, 'moving_variance:0'))
-    beta_tensor = sess.graph.get_tensor_by_name(os.path.join(name, 'beta:0'))
-    moving_mean = sess.run(moving_mean_tensor)
-    moving_var = sess.run(moving_var_tensor)
-    beta = sess.run(beta_tensor)
-    return moving_mean, moving_var, beta
-
-
-def _get_padding(padding_name, conv_shape):
-    padding_name = padding_name.decode("utf-8")
-    if padding_name == "VALID":
-        return [0, 0]
-    elif padding_name == "SAME":
-        # return [math.ceil(int(conv_shape[0])/2), math.ceil(int(conv_shape[1])/2)]
-        return [
-            math.floor(int(conv_shape[0]) / 2),
-            math.floor(int(conv_shape[1]) / 2),
-            math.floor(int(conv_shape[2]) / 2)
-        ]
-    else:
-        raise ValueError('Invalid padding name ' + padding_name)
-
-
-def load_conv3d(state_dict, name_pt, sess, name_tf, bias=False, bn=True):
-    # Transfer convolution params
-    conv_name_tf = os.path.join(name_tf, 'conv_3d')
-    conv_params = get_conv_params(sess, conv_name_tf, bias=bias)
-    if bias:
-        conv_weights, kernel_shape, in_channels, out_channels, strides, padding, conv_bias = conv_params
-    else:
-        conv_weights, kernel_shape, in_channels, out_channels, strides, padding = conv_params
-
-    conv_weights_rs = np.transpose(
-        conv_weights, (4, 3, 0, 1,
-                       2))  # to pt format (out_c, in_c, depth, height, width)
-    state_dict[name_pt + '.conv3d.weight'] = torch.from_numpy(conv_weights_rs)
-    if bias:
-        state_dict[name_pt + '.conv3d.bias'] = torch.from_numpy(conv_bias)
-
-    # Transfer batch norm params
-    if bn:
-        conv_tf_name = os.path.join(name_tf, 'batch_norm')
-        moving_mean, moving_var, beta = get_bn_params(sess, conv_tf_name)
-
-        out_planes = conv_weights_rs.shape[0]
-        state_dict[name_pt + '.batch3d.weight'] = torch.ones(out_planes)
-        state_dict[name_pt +
-                   '.batch3d.bias'] = torch.from_numpy(beta.squeeze())
-        state_dict[name_pt
-                   + '.batch3d.running_mean'] = torch.from_numpy(moving_mean.squeeze())
-        state_dict[name_pt
-                   + '.batch3d.running_var'] = torch.from_numpy(moving_var.squeeze())
-
-
-def load_mixed(state_dict, name_pt, sess, name_tf, fix_typo=False):
-    # Branch 0
-    load_conv3d(state_dict, name_pt + '.branch_0', sess,
-                os.path.join(name_tf, 'Branch_0/Conv3d_0a_1x1'))
-
-    # Branch .1
-    load_conv3d(state_dict, name_pt + '.branch_1.0', sess,
-                os.path.join(name_tf, 'Branch_1/Conv3d_0a_1x1'))
-    load_conv3d(state_dict, name_pt + '.branch_1.1', sess,
-                os.path.join(name_tf, 'Branch_1/Conv3d_0b_3x3'))
-
-    # Branch 2
-    load_conv3d(state_dict, name_pt + '.branch_2.0', sess,
-                os.path.join(name_tf, 'Branch_2/Conv3d_0a_1x1'))
-    if fix_typo:
-        load_conv3d(state_dict, name_pt + '.branch_2.1', sess,
-                    os.path.join(name_tf, 'Branch_2/Conv3d_0a_3x3'))
-    else:
-        load_conv3d(state_dict, name_pt + '.branch_2.1', sess,
-                    os.path.join(name_tf, 'Branch_2/Conv3d_0b_3x3'))
-
-    # Branch 3
-    load_conv3d(state_dict, name_pt + '.branch_3.1', sess,
-                os.path.join(name_tf, 'Branch_3/Conv3d_0b_1x1'))
