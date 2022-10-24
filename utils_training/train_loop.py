@@ -129,6 +129,7 @@ class TrainLoop(object):
                     depth_sq_ft_map = depth_feature_map_T.squeeze()
                     depth_avg_sq_ft_map = torch.mean(depth_sq_ft_map, 0)
                     train_result.update({"rgb_ft_map": rgb_avg_sq_ft_map, "depth_ft_map": depth_avg_sq_ft_map})
+                    update_tensorboard_image(self.tb_writer, tb_step, train_result)
 
                 if batch_idx % self.config_dict["tb_batch_freq"] == 0:
                     mean_rgb = np.mean(rgb_losses)
@@ -139,7 +140,6 @@ class TrainLoop(object):
                                          "loss_depth": mean_depth, "loss_reg_depth": mean_reg_depth,
                                          "acc_depth": acc_depth})
                     update_tensorboard_train(tb_writer=self.tb_writer, global_step=tb_step, train_dict=train_result)
-                    update_tensorboard_image(self.tb_writer, tb_step, train_result)
 
                     tb_step += 1
 
