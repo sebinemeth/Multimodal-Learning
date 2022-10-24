@@ -168,8 +168,9 @@ class TrainLoop(object):
                                                valid_loader=self.valid_loader)
                 update_tensorboard_val(tb_writer=self.tb_writer, global_step=tb_step, valid_dict=valid_result)
                 self.save_models(epoch)
-        except Exception as e:
-            write_log("training", "training is stopped with error:\n{}".format(e), title="error", print_out=True, color="red")
+        except (KeyboardInterrupt, Exception) as e:
+            write_log("training", "training is stopped with error:\n{}".format(e), title="error", print_out=True,
+                      color="red")
             self.save_models("end")
             exit()
 
