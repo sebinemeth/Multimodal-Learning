@@ -1,4 +1,5 @@
 import os
+import traceback
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
@@ -53,7 +54,8 @@ try:
     train_loop.run_loop()
 except KeyboardInterrupt:
     write_log("training", "training is stopped by keyboard interrupt", title="error", print_out=True, color="red")
-except Exception as e:
-    write_log("training", "training is stopped with error:\n{}".format(e), title="error", print_out=True, color="red")
+except Exception:
+    print(traceback.format_exc())
+    write_log("training", "training is stopped with error:\n{}".format(traceback.format_exc()), title="error", print_out=True, color="red")
 finally:
     train_loop.save_models("end")
