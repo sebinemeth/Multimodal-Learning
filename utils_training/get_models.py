@@ -5,16 +5,11 @@ from utils_datasets.nv_gesture.nv_utils import ModalityType
 from utils.log_maker import write_log
 
 
-def get_models(config_dict):
+def get_models(config_dict, only_rgb=False):
     rgb_cnn = Inception3D(num_classes=config_dict["num_of_classes"],
                           modality=ModalityType.RGB,
                           dropout_prob=config_dict["dropout_prob"],
                           name='inception').to(config_dict["device"])
-
-    depth_cnn = Inception3D(num_classes=config_dict["num_of_classes"],
-                            modality=ModalityType.DEPTH,
-                            dropout_prob=config_dict["dropout_prob"],
-                            name='inception').to(config_dict["device"])
 
     if config_dict["rgb_ckp_model_path"] is not None:
         try:
@@ -28,6 +23,14 @@ def get_models(config_dict):
             write_log("init",
                       "rgb model weights are loaded with path: {}".format(config_dict["rgb_ckp_model_path"]),
                       title="load model", print_out=True, color="green")
+
+    if only_rgb:
+        return rgb_cnn
+
+    depth_cnn = Inception3D(num_classes=config_dict["num_of_classes"],
+                            modality=ModalityType.DEPTH,
+                            dropout_prob=config_dict["dropout_prob"],
+                            name='inception').to(config_dict["device"])
 
     if config_dict["depth_ckp_model_path"] is not None:
         try:
