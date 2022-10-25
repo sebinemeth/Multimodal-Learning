@@ -52,17 +52,17 @@ class TrainLoop(object):
                 # distribute data to device
 
                 print("rgb")
-                print("Min =", torch.min(rgb, 0))
-                print("Max =", torch.max(rgb, 0))
-                print("Mean =", torch.mean(rgb, 0))
-                print("Median =", torch.median(rgb, 0))
+                print("Min =", torch.min(rgb, 0).shape)
+                print("Max =", torch.max(rgb, 0).shape)
+                print("Mean =", torch.mean(rgb, 0).shape)
+                print("Median =", torch.median(rgb, 0).shape)
                 print()
 
                 print("depth")
-                print("Min =", torch.min(depth, 0))
-                print("Max =", torch.max(depth, 0))
-                print("Mean =", torch.mean(depth, 0))
-                print("Median =", torch.median(depth, 0))
+                print("Min =", torch.min(depth, 0).shape)
+                print("Max =", torch.max(depth, 0).shape)
+                print("Mean =", torch.mean(depth, 0).shape)
+                print("Median =", torch.median(depth, 0).shape)
                 print()
 
                 rgb, depth = rgb.to(self.config_dict["device"]), depth.to(self.config_dict["device"])
@@ -86,10 +86,10 @@ class TrainLoop(object):
                 loss_rgb = self.criterion(rgb_out, y)  # index of the max log-probability
                 loss_depth = self.criterion(depth_out, y)
 
-                print("y: {}".format(y))
-                print("rgb_out: {}".format(rgb_out))
-                print("depth_out: {}".format(depth_out))
-                print()
+                # print("y: {}".format(y))
+                # print("rgb_out: {}".format(rgb_out))
+                # print("depth_out: {}".format(depth_out))
+                # print()
 
                 rgb_focal_reg_param = self.regularizer(loss_rgb, loss_depth)
                 depth_focal_reg_param = self.regularizer(loss_depth, loss_rgb)
