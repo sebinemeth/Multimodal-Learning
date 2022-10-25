@@ -50,6 +50,21 @@ class TrainLoop(object):
             tq.set_description('ep {}, {}'.format(epoch, self.config_dict["learning_rate"]))
             for batch_idx, (rgb, depth, y) in enumerate(self.train_loader):
                 # distribute data to device
+
+                print("rgb")
+                print("Min =", np.min(rgb, axis=0))
+                print("Max =", np.max(rgb, axis=0))
+                print("Mean =", np.mean(rgb, axis=0))
+                print("Median =", np.median(rgb, axis=0))
+                print()
+
+                print("depth")
+                print("Min =", np.min(depth, axis=0))
+                print("Max =", np.max(depth, axis=0))
+                print("Mean =", np.mean(depth, axis=0))
+                print("Median =", np.median(depth, axis=0))
+                print()
+
                 rgb, depth = rgb.to(self.config_dict["device"]), depth.to(self.config_dict["device"])
                 y = y.to(self.config_dict["device"])
 
