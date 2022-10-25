@@ -71,7 +71,8 @@ class UniModalTrainLoop(object):
                     mean_rgb = np.mean(rgb_losses)
                     mean_reg_rgb = np.mean(rgb_regularized_losses)
                     train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "acc_rgb": acc_rgb})
-                    update_tensorboard_train(tb_writer=self.tb_writer, global_step=tb_step, train_dict=train_result)
+                    update_tensorboard_train(tb_writer=self.tb_writer, global_step=tb_step, train_dict=train_result,
+                                             only_rgb=True)
 
                     tb_step += 1
 
@@ -80,7 +81,8 @@ class UniModalTrainLoop(object):
 
             valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion,
                                                     valid_loader=self.valid_loader)
-            update_tensorboard_val(tb_writer=self.tb_writer, global_step=tb_step, valid_dict=valid_result)
+            update_tensorboard_val(tb_writer=self.tb_writer, global_step=tb_step, valid_dict=valid_result,
+                                   only_rgb=True)
             self.save_model(epoch)
 
     def save_model(self, epoch):
