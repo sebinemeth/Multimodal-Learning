@@ -61,10 +61,10 @@ class TrainLoop(object):
 
                 print("depth")
                 depth_rs = torch.reshape(depth, (depth.shape[0], -1))
-                print("Min =", torch.min(depth_rs, 0).values)
-                print("Max =", torch.max(depth_rs, 0).values)
-                print("Mean =", torch.mean(depth_rs, 0))
-                print("Median =", torch.median(depth_rs, 0).values)
+                print("Min =", torch.min(depth_rs, 1).values)
+                print("Max =", torch.max(depth_rs, 1).values)
+                print("Mean =", torch.mean(depth_rs, 1))
+                print("Median =", torch.median(depth_rs, 1).values)
                 print()
 
                 rgb, depth = rgb.to(self.config_dict["device"]), depth.to(self.config_dict["device"])
