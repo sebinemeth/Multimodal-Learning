@@ -233,10 +233,10 @@ class Inception3D(torch.nn.Module):
             in_channels=1024,
             out_channels=self.num_classes,
             kernel_size=(1, 1, 1),
-            activation=None,
+            activation='relu',
             use_bias=True,
             use_bn=False)
-        self.softmax = torch.nn.Softmax(1)
+        self.softmax = torch.nn.Softmax(dim=1)
 
     def forward(self, inp):
         # Preprocessing

@@ -88,18 +88,18 @@ class TrainLoop(object):
                 loss_rgb = self.criterion(rgb_out, y)  # index of the max log-probability
                 loss_depth = self.criterion(depth_out, y)
 
-                print("y: {}".format(y))
-                print("rgb")
-                for i in range(rgb_out.shape[0]):
-                    print(torch.sum(rgb_out[i] - rgb_out[0]))
-                print()
-                print("depth")
-                for i in range(depth_out.shape[0]):
-                    print(torch.sum(depth_out[i] - depth_out[0]))
-
-                # print("rgb_out: {}".format(rgb_out))
-                # print("depth_out: {}".format(depth_out))
-                print()
+                # print("y: {}".format(y))
+                # print("rgb")
+                # for i in range(rgb_out.shape[0]):
+                #     print(torch.sum(rgb_out[i] - rgb_out[0]))
+                # print()
+                # print("depth")
+                # for i in range(depth_out.shape[0]):
+                #     print(torch.sum(depth_out[i] - depth_out[0]))
+                #
+                # # print("rgb_out: {}".format(rgb_out))
+                # # print("depth_out: {}".format(depth_out))
+                # print()
 
                 rgb_focal_reg_param = self.regularizer(loss_rgb, loss_depth)
                 depth_focal_reg_param = self.regularizer(loss_depth, loss_rgb)

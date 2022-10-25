@@ -82,6 +82,16 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
                 frame_indices = sorted([last_frame_idx - (i * frame_jump) for i in range(sample_duration)])
                 assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)
 
+                import numpy as np
+                # the cut is provided before the end_t
+                # the cover ratio is the ratio of frames after begin_t
+                cover_ration = np.sum(np.array(frame_indices) > begin_t) / len(frame_indices)
+                if cover_ration < config_dict["cover_ration"]:
+                    print(frame_indices)
+                    print(cover_ration)
+                    input()
+                    continue
+
                 label = int(annotations[i]['label'])
 
                 sample = {
