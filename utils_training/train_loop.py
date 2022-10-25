@@ -52,17 +52,17 @@ class TrainLoop(object):
                 # distribute data to device
 
                 print("rgb")
-                print("Min =", np.min(rgb, axis=0))
-                print("Max =", np.max(rgb, axis=0))
-                print("Mean =", np.mean(rgb, axis=0))
-                print("Median =", np.median(rgb, axis=0))
+                print("Min =", torch.min(rgb, 0))
+                print("Max =", torch.max(rgb, 0))
+                print("Mean =", torch.mean(rgb, 0))
+                print("Median =", torch.median(rgb, 0))
                 print()
 
                 print("depth")
-                print("Min =", np.min(depth, axis=0))
-                print("Max =", np.max(depth, axis=0))
-                print("Mean =", np.mean(depth, axis=0))
-                print("Median =", np.median(depth, axis=0))
+                print("Min =", torch.min(depth, 0))
+                print("Max =", torch.max(depth, 0))
+                print("Mean =", torch.mean(depth, 0))
+                print("Median =", torch.median(depth, 0))
                 print()
 
                 rgb, depth = rgb.to(self.config_dict["device"]), depth.to(self.config_dict["device"])
