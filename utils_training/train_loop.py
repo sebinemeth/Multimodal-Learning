@@ -51,21 +51,21 @@ class TrainLoop(object):
             for batch_idx, (rgb, depth, y) in enumerate(self.train_loader):
                 # distribute data to device
 
-                print("rgb")
-                rgb_rs = torch.reshape(rgb, (rgb.shape[0], -1))
-                print("Min =", torch.min(rgb_rs, 1).values)
-                print("Max =", torch.max(rgb_rs, 1).values)
-                print("Mean =", torch.mean(rgb_rs, 1))
-                print("Median =", torch.median(rgb_rs, 1).values)
-                print()
-
-                print("depth")
-                depth_rs = torch.reshape(depth, (depth.shape[0], -1))
-                print("Min =", torch.min(depth_rs, 1).values)
-                print("Max =", torch.max(depth_rs, 1).values)
-                print("Mean =", torch.mean(depth_rs, 1))
-                print("Median =", torch.median(depth_rs, 1).values)
-                print()
+                # print("rgb")
+                # rgb_rs = torch.reshape(rgb, (rgb.shape[0], -1))
+                # print("Min =", torch.min(rgb_rs, 1).values)
+                # print("Max =", torch.max(rgb_rs, 1).values)
+                # print("Mean =", torch.mean(rgb_rs, 1))
+                # print("Median =", torch.median(rgb_rs, 1).values)
+                # print()
+                #
+                # print("depth")
+                # depth_rs = torch.reshape(depth, (depth.shape[0], -1))
+                # print("Min =", torch.min(depth_rs, 1).values)
+                # print("Max =", torch.max(depth_rs, 1).values)
+                # print("Mean =", torch.mean(depth_rs, 1))
+                # print("Median =", torch.median(depth_rs, 1).values)
+                # print()
 
                 rgb, depth = rgb.to(self.config_dict["device"]), depth.to(self.config_dict["device"])
                 y = y.to(self.config_dict["device"])
@@ -88,10 +88,18 @@ class TrainLoop(object):
                 loss_rgb = self.criterion(rgb_out, y)  # index of the max log-probability
                 loss_depth = self.criterion(depth_out, y)
 
-                # print("y: {}".format(y))
+                print("y: {}".format(y))
+                print("rgb")
+                for i in range(rgb_out.shape[0]):
+                    print(torch.sum(rgb_out[i] - rgb_out[0]))
+                print()
+                print("depth")
+                for i in range(depth_out.shape[0]):
+                    print(torch.sum(depth_out[i] - depth_out[0]))
+
                 # print("rgb_out: {}".format(rgb_out))
                 # print("depth_out: {}".format(depth_out))
-                # print()
+                print()
 
                 rgb_focal_reg_param = self.regularizer(loss_rgb, loss_depth)
                 depth_focal_reg_param = self.regularizer(loss_depth, loss_rgb)
