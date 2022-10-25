@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from utils.tensorboard_utils import update_tensorboard_train, update_tensorboard_val, update_tensorboard_image
 from utils_training.validation import validation_step
-from utils.log_maker import  write_log
+from utils.log_maker import write_log
 
 
 class TrainLoop(object):
@@ -70,6 +70,11 @@ class TrainLoop(object):
 
                 loss_rgb = self.criterion(rgb_out, y)  # index of the max log-probability
                 loss_depth = self.criterion(depth_out, y)
+
+                print("y: {}".format(y))
+                print("rgb_out: {}".format(rgb_out))
+                print("depth_out: {}".format(depth_out))
+                print()
 
                 rgb_focal_reg_param = self.regularizer(loss_rgb, loss_depth)
                 depth_focal_reg_param = self.regularizer(loss_depth, loss_rgb)
