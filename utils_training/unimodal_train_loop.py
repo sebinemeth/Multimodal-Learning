@@ -30,7 +30,6 @@ class UniModalTrainLoop(object):
             self.rgb_cnn.train()
 
             rgb_losses = list()
-            rgb_regularized_losses = list()
             train_result = dict()
 
             rgb_correct = 0
@@ -53,7 +52,6 @@ class UniModalTrainLoop(object):
                 self.rgb_optimizer.step()
 
                 rgb_losses.append(loss_rgb.item())
-                rgb_regularized_losses.append(loss_rgb.item())
 
                 total += y.size(0)
 
@@ -64,20 +62,17 @@ class UniModalTrainLoop(object):
 
                 tq.update(1)
                 tq.set_postfix(RGB_loss='{:.2f}'.format(rgb_losses[-1]),
-                               RGB_reg_loss='{:.2f}'.format(rgb_regularized_losses[-1]),
                                RGB_acc='{:.1f}%'.format(acc_rgb * 100))
 
                 if batch_idx % self.config_dict["tb_batch_freq"] == 0:
                     mean_rgb = np.mean(rgb_losses)
-                    mean_reg_rgb = np.mean(rgb_regularized_losses)
-                    train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "acc_rgb": acc_rgb})
+                    train_result.update({"loss_rgb": mean_rgb, "acc_rgb": acc_rgb})
                     update_tensorboard_train(tb_writer=self.tb_writer, global_step=tb_step, train_dict=train_result,
                                              only_rgb=True)
 
                     tb_step += 1
 
                     rgb_losses = list()
-                    rgb_regularized_losses = list()
 
             valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion,
                                                     valid_loader=self.valid_loader)

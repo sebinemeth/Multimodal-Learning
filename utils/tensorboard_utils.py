@@ -23,7 +23,6 @@ def update_tensorboard_train(tb_writer, global_step, train_dict, only_rgb=False)
     """
 
     tb_writer.add_scalar(tag='RGB train loss', scalar_value=train_dict["loss_rgb"], global_step=global_step)
-    tb_writer.add_scalar(tag='RGB regularized train loss', scalar_value=train_dict["loss_reg_rgb"], global_step=global_step)
     tb_writer.add_scalar(tag='RGB train accuracy', scalar_value=train_dict["acc_rgb"],
                          global_step=global_step)
     # tb_writer.add_scalars(main_tag='Depth train',
@@ -31,6 +30,9 @@ def update_tensorboard_train(tb_writer, global_step, train_dict, only_rgb=False)
     #                                        'Depth regularized train loss': train_dict["loss_reg_depth"]},
     #                       global_step=epoch)
     if not only_rgb:
+        tb_writer.add_scalar(tag='RGB regularized train loss', scalar_value=train_dict["loss_reg_rgb"],
+                             global_step=global_step)
+
         tb_writer.add_scalar(tag='Depth train loss', scalar_value=train_dict["loss_depth"], global_step=global_step)
         tb_writer.add_scalar(tag='Depth regularized train loss', scalar_value=train_dict["loss_reg_depth"],
                              global_step=global_step)
