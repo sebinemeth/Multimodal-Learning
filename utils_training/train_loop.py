@@ -52,7 +52,7 @@ class TrainLoop(object):
                 # distribute data to device
 
                 print("rgb")
-                rgb_rs = torch.reshape(rgb, (3, -1))
+                rgb_rs = torch.reshape(rgb, (rgb.shape[0], -1))
                 print("Min =", torch.min(rgb_rs, 1).values.shape)
                 print("Max =", torch.max(rgb_rs, 1).values.shape)
                 print("Mean =", torch.mean(rgb_rs, 1).shape)
