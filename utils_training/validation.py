@@ -85,8 +85,8 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader, epoc
             _, rgb_predicted = rgb_out.max(1)
             rgb_correct += rgb_predicted.eq(y).sum().item()
 
-            y_test.append(y.item())
-            predictions.append(rgb_predicted.item())
+            y_test.append(y.numpy())
+            predictions.append(rgb_predicted.numpy())
 
             acc_rgb = rgb_correct / total
 
