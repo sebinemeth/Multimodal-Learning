@@ -6,12 +6,15 @@ from tqdm import tqdm
 from utils.confusion_matrix import plot_confusion_matrix
 
 
-def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, valid_loader):
+def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, valid_loader, epoch, config_dict):
     with torch.no_grad():
         model_rgb.eval()
         model_depth.eval()
         rgb_loss = list()
         depth_loss = list()
+        y_test = list()
+        rgb_predictions = list()
+        depth_predictions = list()
         rgb_correct = 0
         depth_correct = 0
         total = 0
@@ -40,6 +43,10 @@ def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, val
             _, depth_predicted = depth_out.max(1)
             depth_correct += depth_predicted.eq(y).sum().item()
 
+            y_test.append(y.cpu().numpy())
+            rgb_predictions.append(rgb_predicted.cpu().numpy())
+            depth_predictions.append(depth_predicted.cpu().numpy())
+
             acc_rgb = rgb_correct / total
             acc_depth = depth_correct / total
 
@@ -53,6 +60,12 @@ def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, val
         valid_depth_acc = depth_correct / total
         valid_rgb_loss = np.mean(rgb_loss)  # type: float
         valid_depth_loss = np.mean(depth_loss)  # type: float
+
+        plot_confusion_matrix(np.concatenate(y_test, axis=0), np.concatenate(rgb_predictions, axis=0),
+                              epoch, config_dict, post_fix="rgb")
+        plot_confusion_matrix(np.concatenate(y_test, axis=0), np.concatenate(depth_predictions, axis=0),
+                              epoch, config_dict, post_fix="depth")
+
         return {'valid_rgb_loss': valid_rgb_loss, 'valid_depth_loss': valid_depth_loss,
                 'valid_rgb_acc': valid_rgb_acc, 'valid_depth_acc': valid_depth_acc}
 
@@ -91,13 +104,14 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader, epoc
             acc_rgb = rgb_correct / total
 
             tq.update(1)
-            tq.set_postfix(RGB_loss='{:.2f}'.format(np.mean(rgb_loss)),
+            tq.set_postfix(RGB_loss='{:.2f}'.format(rgb_loss[-1]),
                            RGB_acc='{:.1f}%'.format(acc_rgb * 100))
             # if batch_idx == 100:
             #     break
 
         valid_rgb_acc = rgb_correct / total
         valid_rgb_loss = np.mean(rgb_loss)  # type: float
-        plot_confusion_matrix(np.concatenate(y_test, axis=0), np.concatenate(predictions, axis=0), epoch, config_dict)
+        plot_confusion_matrix(np.concatenate(y_test, axis=0), np.concatenate(predictions, axis=0),
+                              epoch, config_dict, post_fix="rgb")
         return {'valid_rgb_loss': valid_rgb_loss, 'valid_rgb_acc': valid_rgb_acc}
 

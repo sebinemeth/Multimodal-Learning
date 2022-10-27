@@ -16,7 +16,8 @@ class UniModalTrainLoop(object):
                  criterion,
                  train_loader,
                  valid_loader,
-                 tb_writer):
+                 tb_writer,
+                 discord):
         self.config_dict = config_dict
         self.rgb_cnn = rgb_cnn
         self.rgb_optimizer = rgb_optimizer
@@ -24,6 +25,7 @@ class UniModalTrainLoop(object):
         self.train_loader = train_loader
         self.valid_loader = valid_loader
         self.tb_writer = tb_writer
+        self.discord = discord
 
     def run_loop(self):
         for epoch in range(self.config_dict["epoch"]):
@@ -35,8 +37,11 @@ class UniModalTrainLoop(object):
             rgb_correct = 0
             total = 0
             tb_step = 0
-            valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion, epoch=epoch,
-                                                    valid_loader=self.valid_loader, config_dict=self.config_dict)
+            self.discord.send_message(fields=[{"name": "Epoch", "value": "{}".format(epoch), "inline": True},
+                                              {"name": "RGB_loss", "value": "{:.2f}".format(epoch), "inline": True},
+                                              {"name": "RGB_acc", "value": "{:.1f}%".format(epoch), "inline": True},
+                                              {"name": "val_RGB_loss", "value": "{:.2f}".format(epoch), "inline": True},
+                                              {"name": "val_RGB_acc", "value": "{:.1f}%".format(epoch), "inline": True}])
             exit()
             tq = tqdm(total=(len(self.train_loader)))
             tq.set_description('ep {}, {}'.format(epoch, self.config_dict["learning_rate"]))
@@ -87,6 +92,20 @@ class UniModalTrainLoop(object):
                                                                  acc_rgb * 100,
                                                                  valid_result["valid_rgb_loss"],
                                                                  valid_result["valid_rgb_acc"] * 100), title="metrics")
+            self.discord.send_message(fields=[{"name": "Epoch", "value": "{}".format(epoch), "inline": True},
+                                              {"name": "RGB_loss",
+                                               "value": "{:.2f}".format(np.mean(rgb_losses[-2])),
+                                               "inline": True},
+                                              {"name": "RGB_acc",
+                                               "value": "{:.1f}%".format(acc_rgb * 100),
+                                               "inline": True},
+                                              {"name": "val_RGB_loss",
+                                               "value": "{:.2f}".format(valid_result["valid_rgb_loss"]),
+                                               "inline": True},
+                                              {"name": "val_RGB_acc",
+                                               "value": "{:.1f}%".format(valid_result["valid_rgb_acc"] * 100),
+                                               "inline": True}]
+                                      )
             self.save_model(epoch)
 
     def save_model(self, epoch):

@@ -148,7 +148,7 @@ class TrainLoop(object):
                     depth_regularized_losses[-1].append([])
 
             valid_result = validation_step(model_rgb=self.rgb_cnn, model_depth=self.depth_cnn, criterion=self.criterion,
-                                           valid_loader=self.valid_loader)
+                                           valid_loader=self.valid_loader, config_dict=self.config_dict, epoch=epoch)
             update_tensorboard_val(tb_writer=self.tb_writer, global_step=epoch, valid_dict=valid_result)
             write_log("training", "epoch: {}, "
                                   "RGB_loss: {:.2f}, "
