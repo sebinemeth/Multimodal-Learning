@@ -37,12 +37,7 @@ class UniModalTrainLoop(object):
             rgb_correct = 0
             total = 0
             tb_step = 0
-            self.discord.send_message(fields=[{"name": "Epoch", "value": "{}".format(epoch), "inline": True},
-                                              {"name": "RGB_loss", "value": "{:.2f}".format(epoch), "inline": True},
-                                              {"name": "RGB_acc", "value": "{:.1f}%".format(epoch), "inline": True},
-                                              {"name": "val_RGB_loss", "value": "{:.2f}".format(epoch), "inline": True},
-                                              {"name": "val_RGB_acc", "value": "{:.1f}%".format(epoch), "inline": True}])
-            exit()
+
             tq = tqdm(total=(len(self.train_loader)))
             tq.set_description('ep {}, {}'.format(epoch, self.config_dict["learning_rate"]))
             for batch_idx, (rgb, _, y) in enumerate(self.train_loader):
