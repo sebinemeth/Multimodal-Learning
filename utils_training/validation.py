@@ -93,6 +93,8 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader, epoc
             tq.update(1)
             tq.set_postfix(RGB_loss='{:.2f}'.format(np.mean(rgb_loss)),
                            RGB_acc='{:.1f}%'.format(acc_rgb * 100))
+            if batch_idx == 20:
+                break
 
         valid_rgb_acc = rgb_correct / total
         valid_rgb_loss = np.mean(rgb_loss)  # type: float
