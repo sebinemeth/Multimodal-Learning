@@ -73,7 +73,7 @@ class UniModalTrainLoop(object):
                                              only_rgb=True)
 
                     tb_step += 1
-                    rgb_losses[-1].append([])
+                    rgb_losses.append([])
 
             valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion, epoch=epoch,
                                                     valid_loader=self.valid_loader, config_dict=self.config_dict)

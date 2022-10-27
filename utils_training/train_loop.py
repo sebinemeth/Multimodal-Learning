@@ -135,19 +135,19 @@ class TrainLoop(object):
 
                 if batch_idx % self.config_dict["tb_batch_freq"] == 0:
                     mean_rgb = np.mean(rgb_losses[-1])
-                    mean_reg_rgb = np.mean(rgb_regularized_losses)
-                    mean_depth = np.mean(depth_losses)
-                    mean_reg_depth = np.mean(depth_regularized_losses)
+                    mean_reg_rgb = np.mean(rgb_regularized_losses[-1])
+                    mean_depth = np.mean(depth_losses[-1])
+                    mean_reg_depth = np.mean(depth_regularized_losses[-1])
                     train_result.update({"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "acc_rgb": acc_rgb,
                                          "loss_depth": mean_depth, "loss_reg_depth": mean_reg_depth,
                                          "acc_depth": acc_depth})
                     update_tensorboard_train(tb_writer=self.tb_writer, global_step=tb_step, train_dict=train_result)
 
                     tb_step += 1
-                    rgb_losses[-1].append([])
-                    depth_losses[-1].append([])
-                    rgb_regularized_losses[-1].append([])
-                    depth_regularized_losses[-1].append([])
+                    rgb_losses.append([])
+                    depth_losses.append([])
+                    rgb_regularized_losses.append([])
+                    depth_regularized_losses.append([])
 
             valid_result = validation_step(model_rgb=self.rgb_cnn, model_depth=self.depth_cnn, criterion=self.criterion,
                                            valid_loader=self.valid_loader, config_dict=self.config_dict, epoch=epoch)
@@ -204,8 +204,7 @@ class TrainLoop(object):
                                                "inline": True},
                                               {"name": "val_DEPTH_acc",
                                                "value": "{:.1f}%".format(valid_result["valid_depth_acc"] * 100),
-                                               "inline": True}]
-                                      )
+                                               "inline": True}])
             self.save_models(epoch)
 
     def save_models(self, epoch):
