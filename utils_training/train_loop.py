@@ -35,10 +35,10 @@ class TrainLoop(object):
             self.rgb_cnn.train()
             self.depth_cnn.train()
 
-            rgb_losses = list()
-            depth_losses = list()
-            rgb_regularized_losses = list()
-            depth_regularized_losses = list()
+            rgb_losses = [[]]
+            depth_losses = [[]]
+            rgb_regularized_losses = [[]]
+            depth_regularized_losses = [[]]
             train_result = dict()
 
             rgb_correct = 0
@@ -50,23 +50,6 @@ class TrainLoop(object):
             tq.set_description('ep {}, {}'.format(epoch, self.config_dict["learning_rate"]))
             for batch_idx, (rgb, depth, y) in enumerate(self.train_loader):
                 # distribute data to device
-
-                # print("rgb")
-                # rgb_rs = torch.reshape(rgb, (rgb.shape[0], -1))
-                # print("Min =", torch.min(rgb_rs, 1).values)
-                # print("Max =", torch.max(rgb_rs, 1).values)
-                # print("Mean =", torch.mean(rgb_rs, 1))
-                # print("Median =", torch.median(rgb_rs, 1).values)
-                # print()
-                #
-                # print("depth")
-                # depth_rs = torch.reshape(depth, (depth.shape[0], -1))
-                # print("Min =", torch.min(depth_rs, 1).values)
-                # print("Max =", torch.max(depth_rs, 1).values)
-                # print("Mean =", torch.mean(depth_rs, 1))
-                # print("Median =", torch.median(depth_rs, 1).values)
-                # print()
-
                 rgb, depth = rgb.to(self.config_dict["device"]), depth.to(self.config_dict["device"])
                 y = y.to(self.config_dict["device"])
 
@@ -87,19 +70,6 @@ class TrainLoop(object):
 
                 loss_rgb = self.criterion(rgb_out, y)  # index of the max log-probability
                 loss_depth = self.criterion(depth_out, y)
-
-                # print("y: {}".format(y))
-                # print("rgb")
-                # for i in range(rgb_out.shape[0]):
-                #     print(torch.sum(rgb_out[i] - rgb_out[0]))
-                # print()
-                # print("depth")
-                # for i in range(depth_out.shape[0]):
-                #     print(torch.sum(depth_out[i] - depth_out[0]))
-                #
-                # # print("rgb_out: {}".format(rgb_out))
-                # # print("depth_out: {}".format(depth_out))
-                # print()
 
                 rgb_focal_reg_param = self.regularizer(loss_rgb, loss_depth)
                 depth_focal_reg_param = self.regularizer(loss_depth, loss_rgb)
@@ -129,10 +99,10 @@ class TrainLoop(object):
                 self.rgb_optimizer.step()
                 self.depth_optimizer.step()
 
-                rgb_losses.append(loss_rgb.item())
-                depth_losses.append(loss_depth.item())
-                rgb_regularized_losses.append(ssa_loss_rgb.item())
-                depth_regularized_losses.append(ssa_loss_depth.item())
+                rgb_losses[-1].append(loss_rgb.item())
+                depth_losses[-1].append(loss_depth.item())
+                rgb_regularized_losses[-1].append(ssa_loss_rgb.item())
+                depth_regularized_losses[-1].append(ssa_loss_depth.item())
 
                 total += y.size(0)
 
@@ -146,10 +116,10 @@ class TrainLoop(object):
                 acc_depth = depth_correct / total
 
                 tq.update(1)
-                tq.set_postfix(RGB_loss='{:.2f}'.format(rgb_losses[-1]),
-                               DEPTH_loss='{:.2f}'.format(depth_losses[-1]),
-                               RGB_reg_loss='{:.2f}'.format(rgb_regularized_losses[-1]),
-                               DEPTH_reg_loss='{:.2f}'.format(depth_regularized_losses[-1]),
+                tq.set_postfix(RGB_loss='{:.2f}'.format(rgb_losses[-1][-1]),
+                               DEPTH_loss='{:.2f}'.format(depth_losses[-1][-1]),
+                               RGB_reg_loss='{:.2f}'.format(rgb_regularized_losses[-1][-1]),
+                               DEPTH_reg_loss='{:.2f}'.format(depth_regularized_losses[-1][-1]),
                                RGB_acc='{:.1f}%'.format(acc_rgb * 100),
                                DEPTH_acc='{:.1f}%'.format(acc_depth * 100))
 
@@ -162,7 +132,7 @@ class TrainLoop(object):
                     update_tensorboard_image(self.tb_writer, tb_step, train_result)
 
                 if batch_idx % self.config_dict["tb_batch_freq"] == 0:
-                    mean_rgb = np.mean(rgb_losses)
+                    mean_rgb = np.mean(rgb_losses[-1])
                     mean_reg_rgb = np.mean(rgb_regularized_losses)
                     mean_depth = np.mean(depth_losses)
                     mean_reg_depth = np.mean(depth_regularized_losses)
@@ -172,22 +142,48 @@ class TrainLoop(object):
                     update_tensorboard_train(tb_writer=self.tb_writer, global_step=tb_step, train_dict=train_result)
 
                     tb_step += 1
-
-                    rgb_losses = list()
-                    depth_losses = list()
-                    rgb_regularized_losses = list()
-                    depth_regularized_losses = list()
+                    rgb_losses[-1].append([])
+                    depth_losses[-1].append([])
+                    rgb_regularized_losses[-1].append([])
+                    depth_regularized_losses[-1].append([])
 
             valid_result = validation_step(model_rgb=self.rgb_cnn, model_depth=self.depth_cnn, criterion=self.criterion,
                                            valid_loader=self.valid_loader)
-            update_tensorboard_val(tb_writer=self.tb_writer, global_step=tb_step, valid_dict=valid_result)
+            update_tensorboard_val(tb_writer=self.tb_writer, global_step=epoch, valid_dict=valid_result)
+            write_log("training", "epoch: {}, "
+                                  "RGB_loss: {:.2f}, "
+                                  "RGB_reg_loss: {:.2f}, "
+                                  "RGB_acc: {:.1f}%, "
+                                  "DEPTH_loss: {:.2f}, "
+                                  "DEPTH_reg_loss: {:.2f}, "
+                                  "DEPTH_acc: {:.1f}%, "
+                                  "val_RGB_loss: {:.2f}, "
+                                  "val_RGB_acc: {:.1f}%, "
+                                  "val_DEPTH_loss: {:.2f}, "
+                                  "val_DEPTH_acc: {:.1f}%".format(epoch,
+                                                                  np.mean(rgb_losses[-2]),
+                                                                  np.mean(rgb_regularized_losses[-2]),
+                                                                  acc_rgb * 100,
+                                                                  np.mean(depth_losses[-2]),
+                                                                  np.mean(depth_regularized_losses[-2]),
+                                                                  acc_depth * 100,
+                                                                  valid_result["valid_rgb_loss"],
+                                                                  valid_result["valid_rgb_acc"] * 100,
+                                                                  valid_result["valid_depth_loss"],
+                                                                  valid_result["valid_depth_acc"] * 100
+                                                                  ), title="metrics")
             self.save_models(epoch)
 
     def save_models(self, epoch):
         write_log("training", "models are saved", title="save models")
-        torch.save(self.rgb_cnn.state_dict(),
+        torch.save({'epoch': epoch,
+                    'model_state_dict': self.rgb_cnn.state_dict(),
+                    'optimizer_state_dict': self.rgb_optimizer.state_dict()},
                    os.path.join(self.config_dict["model_save_dir"], "model_rgb_{}.pt".format(epoch)))
-        torch.save(self.depth_cnn.state_dict(),
+
+        torch.save({'epoch': epoch,
+                    'model_state_dict': self.depth_cnn.state_dict(),
+                    'optimizer_state_dict': self.depth_optimizer.state_dict()},
                    os.path.join(self.config_dict["model_save_dir"], "model_depth_{}.pt".format(epoch)))
 
     @staticmethod

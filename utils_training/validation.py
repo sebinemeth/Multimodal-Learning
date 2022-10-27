@@ -3,6 +3,8 @@ from torch import nn
 import numpy as np
 from tqdm import tqdm
 
+from utils.confusion_matrix import plot_confusion_matrix
+
 
 def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, valid_loader):
     with torch.no_grad():
@@ -55,12 +57,14 @@ def validation_step(model_rgb: nn.Module, model_depth: nn.Module, criterion, val
                 'valid_rgb_acc': valid_rgb_acc, 'valid_depth_acc': valid_depth_acc}
 
 
-def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader):
+def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader, epoch, config_dict):
     with torch.no_grad():
         model_rgb.eval()
+        y_test = list()
+        predictions = list()
+
         rgb_loss = list()
         rgb_correct = 0
-
         total = 0
 
         use_cuda = torch.cuda.is_available()  # check if GPU exists
@@ -81,6 +85,9 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader):
             _, rgb_predicted = rgb_out.max(1)
             rgb_correct += rgb_predicted.eq(y).sum().item()
 
+            y_test.append(y.item())
+            predictions.append(rgb_predicted.item())
+
             acc_rgb = rgb_correct / total
 
             tq.update(1)
@@ -89,5 +96,6 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader):
 
         valid_rgb_acc = rgb_correct / total
         valid_rgb_loss = np.mean(rgb_loss)  # type: float
+        plot_confusion_matrix(np.concatenate(y_test, axis=0), np.concatenate(predictions, axis=0), epoch, config_dict)
         return {'valid_rgb_loss': valid_rgb_loss, 'valid_rgb_acc': valid_rgb_acc}
 

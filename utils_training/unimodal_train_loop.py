@@ -29,13 +29,15 @@ class UniModalTrainLoop(object):
         for epoch in range(self.config_dict["epoch"]):
             self.rgb_cnn.train()
 
-            rgb_losses = list()
+            rgb_losses = [[]]
             train_result = dict()
 
             rgb_correct = 0
             total = 0
             tb_step = 0
-
+            valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion, epoch=epoch,
+                                                    valid_loader=self.valid_loader, config_dict=self.config_dict)
+            exit()
             tq = tqdm(total=(len(self.train_loader)))
             tq.set_description('ep {}, {}'.format(epoch, self.config_dict["learning_rate"]))
             for batch_idx, (rgb, _, y) in enumerate(self.train_loader):
@@ -51,7 +53,7 @@ class UniModalTrainLoop(object):
 
                 self.rgb_optimizer.step()
 
-                rgb_losses.append(loss_rgb.item())
+                rgb_losses[-1].append(loss_rgb.item())
 
                 total += y.size(0)
 
@@ -61,26 +63,35 @@ class UniModalTrainLoop(object):
                 acc_rgb = rgb_correct / total
 
                 tq.update(1)
-                tq.set_postfix(RGB_loss='{:.2f}'.format(rgb_losses[-1]),
+                tq.set_postfix(RGB_loss='{:.2f}'.format(rgb_losses[-1][-1]),
                                RGB_acc='{:.1f}%'.format(acc_rgb * 100))
 
                 if batch_idx % self.config_dict["tb_batch_freq"] == 0:
-                    mean_rgb = np.mean(rgb_losses)
+                    mean_rgb = np.mean(rgb_losses[-1])
                     train_result.update({"loss_rgb": mean_rgb, "acc_rgb": acc_rgb})
                     update_tensorboard_train(tb_writer=self.tb_writer, global_step=tb_step, train_dict=train_result,
                                              only_rgb=True)
 
                     tb_step += 1
+                    rgb_losses[-1].append([])
 
-                    rgb_losses = list()
-
-            valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion,
-                                                    valid_loader=self.valid_loader)
-            update_tensorboard_val(tb_writer=self.tb_writer, global_step=tb_step, valid_dict=valid_result,
-                                   only_rgb=True)
+            valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion, epoch=epoch,
+                                                    valid_loader=self.valid_loader, config_dict=self.config_dict)
+            update_tensorboard_val(tb_writer=self.tb_writer, global_step=epoch, valid_dict=valid_result, only_rgb=True)
+            write_log("training", "epoch: {},"
+                                  " RGB_loss: {:.2f},"
+                                  " RGB_acc: {:.1f}%,"
+                                  " val_RGB_loss: {:.2f},"
+                                  " val_RGB_acc: {:.1f}%".format(epoch,
+                                                                 np.mean(rgb_losses[-2]),
+                                                                 acc_rgb * 100,
+                                                                 valid_result["valid_rgb_loss"],
+                                                                 valid_result["valid_rgb_acc"] * 100), title="metrics")
             self.save_model(epoch)
 
     def save_model(self, epoch):
         write_log("training", "models are saved", title="save models")
-        torch.save(self.rgb_cnn.state_dict(),
+        torch.save({'epoch': epoch,
+                    'model_state_dict': self.rgb_cnn.state_dict(),
+                    'optimizer_state_dict': self.rgb_optimizer.state_dict()},
                    os.path.join(self.config_dict["model_save_dir"], "model_rgb_{}.pt".format(epoch)))

@@ -11,9 +11,13 @@ def get_models(config_dict, only_rgb=False):
                           dropout_prob=config_dict["dropout_prob"],
                           name='inception').to(config_dict["device"])
 
+    rgb_optimizer = torch.optim.Adam(rgb_cnn.parameters(), lr=config_dict["learning_rate"])
+
     if config_dict["rgb_ckp_model_path"] is not None:
         try:
-            rgb_cnn.load_state_dict(torch.load(config_dict["rgb_ckp_model_path"]))
+            checkpoint = torch.load(config_dict["rgb_ckp_model_path"])
+            rgb_cnn.load_state_dict(checkpoint['model_state_dict'])
+            rgb_optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         except Exception as e:
             write_log("init",
                       "rgb model weights could not be loaded with path: {}\n{}".format(
@@ -25,16 +29,20 @@ def get_models(config_dict, only_rgb=False):
                       title="load model", print_out=True, color="green")
 
     if only_rgb:
-        return rgb_cnn
+        return rgb_cnn, rgb_optimizer
 
     depth_cnn = Inception3D(num_classes=config_dict["num_of_classes"],
                             modality=ModalityType.DEPTH,
                             dropout_prob=config_dict["dropout_prob"],
                             name='inception').to(config_dict["device"])
 
+    depth_optimizer = torch.optim.Adam(depth_cnn.parameters(), lr=config_dict["learning_rate"])
+
     if config_dict["depth_ckp_model_path"] is not None:
         try:
-            depth_cnn.load_state_dict(torch.load(config_dict["depth_ckp_model_path"]))
+            checkpoint = torch.load(config_dict["depth_ckp_model_path"])
+            depth_cnn.load_state_dict(checkpoint['model_state_dict'])
+            depth_optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         except Exception as e:
             write_log("init",
                       "depth model weights could not be loaded with path: {}\n{}".format(
@@ -45,5 +53,5 @@ def get_models(config_dict, only_rgb=False):
                       "depth model weights are loaded with path: {}".format(config_dict["depth_ckp_model_path"]),
                       title="load model", print_out=True, color="green")
 
-    return rgb_cnn, depth_cnn
+    return rgb_cnn, rgb_optimizer, depth_cnn, depth_optimizer
 

@@ -30,15 +30,12 @@ os.makedirs(model_save_dir, exist_ok=True)
 config_dict["model_save_dir"] = model_save_dir
 
 train_loader, valid_loader = get_loaders(config_dict)
-rgb_cnn, depth_cnn = get_models(config_dict)
+rgb_cnn, rgb_optimizer, depth_cnn, depth_optimizer = get_models(config_dict)
 
 if config_dict["print_summary"]:
     summary(rgb_cnn, input_size=(3, 32, 224, 224))  # (batch size, chanel, duration, width, height)
     summary(depth_cnn, input_size=(1, 32, 224, 224))  # (batch size, chanel, duration, width, height)
 
-# optimize all cnn parameters
-rgb_optimizer = torch.optim.Adam(rgb_cnn.parameters(), lr=config_dict["learning_rate"])
-depth_optimizer = torch.optim.Adam(depth_cnn.parameters(), lr=config_dict["learning_rate"])
 criterion = torch.nn.CrossEntropyLoss()
 
 train_loop = TrainLoop(config_dict,
