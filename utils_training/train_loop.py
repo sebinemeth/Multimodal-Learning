@@ -19,7 +19,8 @@ class TrainLoop(object):
                  criterion,
                  train_loader,
                  valid_loader,
-                 tb_writer):
+                 tb_writer,
+                 discord):
         self.config_dict = config_dict
         self.rgb_cnn = rgb_cnn
         self.depth_cnn = depth_cnn
@@ -29,6 +30,7 @@ class TrainLoop(object):
         self.train_loader = train_loader
         self.valid_loader = valid_loader
         self.tb_writer = tb_writer
+        self.discord = discord
 
     def run_loop(self):
         for epoch in range(self.config_dict["epoch"]):
@@ -172,6 +174,38 @@ class TrainLoop(object):
                                                                   valid_result["valid_depth_loss"],
                                                                   valid_result["valid_depth_acc"] * 100
                                                                   ), title="metrics")
+            self.discord.send_message(fields=[{"name": "Epoch", "value": "{}".format(epoch), "inline": True},
+                                              {"name": "RGB_loss",
+                                               "value": "{:.2f}".format(np.mean(rgb_losses[-2])),
+                                               "inline": True},
+                                              {"name": "RGB_reg_loss",
+                                               "value": "{:.2f}".format(np.mean(rgb_regularized_losses[-2])),
+                                               "inline": True},
+                                              {"name": "RGB_acc",
+                                               "value": "{:.1f}%".format(acc_rgb * 100),
+                                               "inline": True},
+                                              {"name": "val_RGB_loss",
+                                               "value": "{:.2f}".format(valid_result["valid_rgb_loss"]),
+                                               "inline": True},
+                                              {"name": "val_RGB_acc",
+                                               "value": "{:.1f}%".format(valid_result["valid_rgb_acc"] * 100),
+                                               "inline": True},
+                                              {"name": "DEPTH_loss",
+                                               "value": "{:.2f}".format(np.mean(depth_losses[-2])),
+                                               "inline": True},
+                                              {"name": "DEPTH_reg_loss",
+                                               "value": "{:.2f}".format(np.mean(depth_regularized_losses[-2])),
+                                               "inline": True},
+                                              {"name": "DEPTH_acc",
+                                               "value": "{:.1f}%".format(acc_depth * 100),
+                                               "inline": True},
+                                              {"name": "val_DEPTH_loss",
+                                               "value": "{:.2f}".format(valid_result["valid_depth_loss"]),
+                                               "inline": True},
+                                              {"name": "val_DEPTH_acc",
+                                               "value": "{:.1f}%".format(valid_result["valid_depth_acc"] * 100),
+                                               "inline": True}]
+                                      )
             self.save_models(epoch)
 
     def save_models(self, epoch):
