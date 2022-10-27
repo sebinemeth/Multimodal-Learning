@@ -6,7 +6,7 @@ from torchsummary import summary
 
 from utils.log_maker import start_log_maker, write_log
 from utils.arg_parser import get_config_dict
-from utils.discord import Discord
+from utils.discord import DiscordBot
 from utils_training.get_loaders import get_loaders
 from utils_training.unimodal_train_loop import UniModalTrainLoop
 from utils_training.get_models import get_models
@@ -30,7 +30,7 @@ model_save_dir = os.path.join(config_dict["base_dir_path"], "model")
 os.makedirs(model_save_dir, exist_ok=True)
 config_dict["model_save_dir"] = model_save_dir
 
-discord = Discord()
+discord = DiscordBot()
 
 train_loader, valid_loader = get_loaders(config_dict)
 rgb_cnn, rgb_optimizer = get_models(config_dict, only_rgb=True)
