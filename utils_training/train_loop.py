@@ -49,7 +49,7 @@ class TrainLoop(object):
             tb_step = 0
 
             tq = tqdm(total=(len(self.train_loader)))
-            tq.set_description('ep {}, {}'.format(epoch, self.config_dict["learning_rate"]))
+            tq.set_description('ep {}'.format(epoch))
             for batch_idx, (rgb, depth, y) in enumerate(self.train_loader):
                 # distribute data to device
                 rgb, depth = rgb.to(self.config_dict["device"]), depth.to(self.config_dict["device"])
