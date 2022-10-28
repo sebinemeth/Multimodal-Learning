@@ -77,6 +77,8 @@ def get_config_dict():
     opt.add_argument("--learning_rate", default=None, type=str2float, help="starting value of learning rate")
     opt.add_argument("--num_of_classes", default=None, type=str2int, help="number of classes")
     opt.add_argument("--only_with_gesture", default=None, type=str2bool, help="training only with gestures")
+    opt.add_argument("--train_batch_size", default=None, type=str2int, help="batch size during training")
+    opt.add_argument("--val_batch_size", default=None, type=str2int, help="batch size during validation")
 
     # Other parameters
     opt.add_argument("--img_x", default=None, type=str2int, help="")

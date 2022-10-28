@@ -23,11 +23,11 @@ sample_duration: 64 # 64
 frame_jump: 1
 only_with_gesture: True
 
-train_batch_size: 8
+train_batch_size: 6
 train_shuffle_data: True
 train_num_of_workers: 10
 
-val_batch_size: 8
+val_batch_size: 6
 val_shuffle_data: False
 val_num_of_workers: 10
 
