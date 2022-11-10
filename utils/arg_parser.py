@@ -86,6 +86,7 @@ def get_config_dict():
     opt.add_argument("--depth_x", default=None, type=str2int, help="")
     opt.add_argument("--depth_y", default=None, type=str2int, help="")
     opt.add_argument("--sample_duration", default=None, type=str2int, help="")
+    opt.add_argument("--frame_jump", default=None, type=str2int, help="")
 
     # Paths for training
     opt.add_argument("--dataset_path", default=None, type=str2str, help="path to dataset folder")

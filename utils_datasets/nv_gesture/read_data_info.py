@@ -79,7 +79,8 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
         if config_dict["only_with_gesture"]:
             # TODO: end_t + 1 does not work
             for last_frame_idx in range(min(end_t, max_frame_idx), begin_t, -1):
-                frame_indices = sorted([last_frame_idx - (i * frame_jump) for i in range(sample_duration)])
+                frame_indices = sorted([last_frame_idx - i for i in range(sample_duration)])
+                # frame_indices = sorted([last_frame_idx - (i * frame_jump) for i in range(sample_duration)])
                 assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)
 
                 # the cut is provided before the end_t
@@ -88,6 +89,7 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
                 if cover_ratio < config_dict["cover_ratio"]:
                     continue
 
+                frame_indices = frame_indices[::frame_jump]
                 label = int(annotations[i]['label'])
 
                 sample = {
