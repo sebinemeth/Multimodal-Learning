@@ -71,6 +71,11 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
         max_frame_idx = annotations[i]['max_frame_idx']
         begin_t = int(annotations[i]['start_frame'])
         end_t = int(annotations[i]['end_frame'])
+        label = int(annotations[i]['label'])
+
+        if len(config_dict["used_classes"]) > 0 and label not in config_dict["used_classes"]:
+            # if config_dict["used_classes"] is empty, each class will be used
+            continue
 
         frame_jump = config_dict["frame_jump"]
         sample_duration = config_dict["sample_duration"]
@@ -90,7 +95,6 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
                     continue
 
                 frame_indices = frame_indices[::frame_jump]
-                label = int(annotations[i]['label'])
 
                 sample = {
                     'video_folder': video_folder,
