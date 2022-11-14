@@ -26,6 +26,6 @@ class DiscordBot(object):
                 file=files
             )
         except Exception as e:
-            write_log("training", "error during snt discord message: {}".format(e), title="discord")
+            write_log("training", "error during sent discord message: {}".format(e), title="discord")
             return
 

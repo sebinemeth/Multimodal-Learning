@@ -161,6 +161,8 @@ def print_to_discord(discord: DiscordBot, dictionary: dict):
     fields = list()
 
     for key, value in dictionary.items():
+        if key == "device":
+            value = str(value)
         fields.append({"name": key, "value": value, "inline": True})
 
     discord.send_message(title="Training started with parameters:", fields=fields)
