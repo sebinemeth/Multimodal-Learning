@@ -7,6 +7,7 @@ import datetime
 from collections import defaultdict
 
 from utils.log_maker import set_log_dir_path, write_log
+from utils.discord import DiscordBot
 
 
 def str2bool(v):
@@ -122,9 +123,6 @@ def get_config_dict():
         with open(args.config_yaml, 'r') as yaml_file:
             config_dict = yaml.safe_load(yaml_file)
 
-        with open(os.path.join(log_dir_path, 'config.yaml'), 'w') as outfile:
-            yaml.dump(config_dict, outfile, default_flow_style=False)
-
         for key, item in vars(args).items():
             if item is not None:
                 config_dict[key] = item
@@ -135,6 +133,9 @@ def get_config_dict():
 
     write_log("init", " ".join(sys.argv), title="command")
     write_log("init", config_dict, title="config dict")
+
+    with open(os.path.join(log_dir_path, 'config.yaml'), 'w') as outfile:
+        yaml.dump(config_dict, outfile, default_flow_style=False)
 
     config_dict = defaultdict(lambda: None, config_dict)
     return config_dict
@@ -151,6 +152,18 @@ def refresh_config(original_config):
     return original_config
 
 
-def print_dict(dictionary):
+def print_dict(dictionary: dict):
     for key, value in dictionary.items():
         print(str(key) + ': ' + str(value))
+
+
+def print_to_discord(discord: DiscordBot, dictionary: dict):
+    fields = list()
+    fields.append({"name": "Training started with parameters", "value": "", "inline": True})
+
+    for key, value in dictionary.items():
+        fields.append({"name": key, "value": value, "inline": True})
+
+    discord.send_message(fields=fields)
+
+
