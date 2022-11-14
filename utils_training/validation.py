@@ -109,6 +109,6 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader, epoc
 
         valid_rgb_acc = rgb_correct / total
         valid_rgb_loss = np.mean(rgb_loss)  # type: float
-        cm_path = plot_confusion_matrix(np.concatenate(y_test, axis=0), np.concatenate(predictions, axis=0),
-                                        epoch, config_dict, post_fix="rgb")
-        return {'valid_rgb_loss': valid_rgb_loss, 'valid_rgb_acc': valid_rgb_acc}, cm_path
+        plot_confusion_matrix(np.concatenate(y_test, axis=0), np.concatenate(predictions, axis=0),
+                              epoch, config_dict, post_fix="rgb")
+        return {'valid_rgb_loss': valid_rgb_loss, 'valid_rgb_acc': valid_rgb_acc}

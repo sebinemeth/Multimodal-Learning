@@ -1,19 +1,16 @@
+import json
+
 from discordwebhook import Discord
 from utils.log_maker import write_log
 
 
 class DiscordBot(object):
     def __init__(self):
-        self.discord = Discord(url="https://discord.com/api/webhooks/1035170236665712660"
-                                   "/ezpABEIu1K8g0BK8PJcpOjSHG0VC85SGJxylvR50iEmhM5iBsn3NyX12c3ykco01OtS7")
+        with open('./discord_url.json') as f:
+            url = json.load(f)["discord_url"]
+        self.discord = Discord(url=url)
 
     def send_message(self, title=None, description=None, fields=None, file_names=None):
-        # fields = [
-        #     {"name": "Epoch", "value": "4", "inline": True},
-        #     {"name": "Accuracy", "value": "0.9976", "inline": True},
-        #     {"name": "Loss", "value": "3.87", "inline": True}
-        # ]
-        # file_names = ["acc_plot_example.webp"]
         if fields is None:
             fields = list()
 

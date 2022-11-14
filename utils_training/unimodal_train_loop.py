@@ -2,10 +2,15 @@ import torch
 import os
 import numpy as np
 from tqdm import tqdm
+from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
 from utils.tensorboard_utils import update_tensorboard_train, update_tensorboard_val
 from utils_training.validation import unimodal_validation_step
 from utils.log_maker import write_log
+from utils.history import History
+from utils.callbacks import CallbackRunner
+from utils.discord import DiscordBot
 
 
 class UniModalTrainLoop(object):
@@ -14,16 +19,20 @@ class UniModalTrainLoop(object):
                  rgb_cnn: torch.nn.Module,
                  rgb_optimizer,
                  criterion,
-                 train_loader,
-                 valid_loader,
-                 tb_writer,
-                 discord):
+                 train_loader: DataLoader,
+                 valid_loader: DataLoader,
+                 history: History,
+                 callback_runner: CallbackRunner,
+                 tb_writer: SummaryWriter,
+                 discord: DiscordBot):
         self.config_dict = config_dict
         self.rgb_cnn = rgb_cnn
         self.rgb_optimizer = rgb_optimizer
         self.criterion = criterion
         self.train_loader = train_loader
         self.valid_loader = valid_loader
+        self.history = history
+        self.callback_runner = callback_runner
         self.tb_writer = tb_writer
         self.discord = discord
 
@@ -75,16 +84,20 @@ class UniModalTrainLoop(object):
                     tb_step += 1
                     rgb_losses.append([])
 
-            valid_result, cm_path = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion,
-                                                             epoch=epoch, valid_loader=self.valid_loader,
-                                                             config_dict=self.config_dict)
+            valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion,
+                                                    epoch=epoch, valid_loader=self.valid_loader,
+                                                    config_dict=self.config_dict)
             update_tensorboard_val(tb_writer=self.tb_writer, global_step=epoch, valid_dict=valid_result, only_rgb=True)
+            self.history.add_items({"rgb_loss": np.mean(rgb_losses),
+                                    "rgb_acc": acc_rgb,
+                                    "val_rgb_loss": valid_result["valid_rgb_loss"],
+                                    "val_rgb_acc": valid_result["valid_rgb_acc"]})
             write_log("training", "epoch: {},"
                                   " RGB_loss: {:.2f},"
                                   " RGB_acc: {:.1f}%,"
                                   " val_RGB_loss: {:.2f},"
                                   " val_RGB_acc: {:.1f}%".format(epoch,
-                                                                 np.mean(rgb_losses[-2]),
+                                                                 np.mean(rgb_losses),
                                                                  acc_rgb * 100,
                                                                  valid_result["valid_rgb_loss"],
                                                                  valid_result["valid_rgb_acc"] * 100),
@@ -102,9 +115,10 @@ class UniModalTrainLoop(object):
                                               {"name": "val_RGB_acc",
                                                "value": "{:.1f}%".format(valid_result["valid_rgb_acc"] * 100),
                                                "inline": True}],
-                                      file_names=[cm_path]
+                                      file_names=[self.config_dict["last_cm_path"]]
                                       )
             self.save_models(epoch)
+            self.callback_runner.on_epoch_end(epoch)
 
     def save_models(self, epoch):
         write_log("training", "models are saved", title="save models")

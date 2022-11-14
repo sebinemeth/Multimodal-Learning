@@ -59,9 +59,6 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
 
     data_info_list = list()
     for i in tqdm(range(len(video_folders)), desc="NV Dataset - {}".format(subset_type.name)):
-        # if i % 100 == 0:
-        #     print('dataset loading [{}/{}]'.format(i, len(video_names)))
-
         video_folder = os.path.join(config_dict["dataset_path"], video_folders[i])
 
         if not os.path.exists(video_folder):
