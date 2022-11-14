@@ -86,6 +86,7 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader, epoc
         tq = tqdm(total=(len(valid_loader)))
         tq.set_description('Validation')
         for batch_idx, (rgb, _, y) in enumerate(valid_loader):
+            print(y)
             rgb, y = rgb.to(device), y.to(device)
             rgb_out, _ = model_rgb(rgb)
             # loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability

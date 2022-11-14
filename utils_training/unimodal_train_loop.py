@@ -50,6 +50,7 @@ class UniModalTrainLoop(object):
             tq = tqdm(total=(len(self.train_loader)))
             tq.set_description('ep {}'.format(epoch))
             for batch_idx, (rgb, _, y) in enumerate(self.train_loader):
+                print(y)
                 # distribute data to device
                 rgb = rgb.to(self.config_dict["device"])
                 y = y.to(self.config_dict["device"])
