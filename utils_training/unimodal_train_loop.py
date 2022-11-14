@@ -87,7 +87,7 @@ class UniModalTrainLoop(object):
                                                     epoch=epoch, valid_loader=self.valid_loader,
                                                     config_dict=self.config_dict)
             update_tensorboard_val(tb_writer=self.tb_writer, global_step=epoch, valid_dict=valid_result, only_rgb=True)
-            self.history.add_items({"rgb_loss": np.mean(rgb_losses[:-1]),
+            self.history.add_items({"rgb_loss": np.mean(sum(rgb_losses, [])),
                                     "rgb_acc": acc_rgb,
                                     "val_rgb_loss": valid_result["valid_rgb_loss"],
                                     "val_rgb_acc": valid_result["valid_rgb_acc"]})
@@ -96,14 +96,14 @@ class UniModalTrainLoop(object):
                                   " RGB_acc: {:.1f}%,"
                                   " val_RGB_loss: {:.2f},"
                                   " val_RGB_acc: {:.1f}%".format(epoch,
-                                                                 np.mean(rgb_losses[:-1]),
+                                                                 np.mean(sum(rgb_losses, [])),
                                                                  acc_rgb * 100,
                                                                  valid_result["valid_rgb_loss"],
                                                                  valid_result["valid_rgb_acc"] * 100),
                       title="metrics")
             self.discord.send_message(fields=[{"name": "Epoch", "value": "{}".format(epoch), "inline": True},
                                               {"name": "RGB_loss",
-                                               "value": "{:.2f}".format(np.mean(rgb_losses[:-1])),
+                                               "value": "{:.2f}".format(np.mean(sum(rgb_losses, []))),
                                                "inline": True},
                                               {"name": "RGB_acc",
                                                "value": "{:.1f}%".format(acc_rgb * 100),
