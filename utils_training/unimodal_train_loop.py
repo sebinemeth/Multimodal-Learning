@@ -80,16 +80,14 @@ class UniModalTrainLoop(object):
                     train_result.update({"loss_rgb": mean_rgb, "acc_rgb": acc_rgb})
                     update_tensorboard_train(tb_writer=self.tb_writer, global_step=tb_step, train_dict=train_result,
                                              only_rgb=True)
-
                     tb_step += 1
-                    print(np.mean(rgb_losses))
                     rgb_losses.append([])
 
             valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion,
                                                     epoch=epoch, valid_loader=self.valid_loader,
                                                     config_dict=self.config_dict)
             update_tensorboard_val(tb_writer=self.tb_writer, global_step=epoch, valid_dict=valid_result, only_rgb=True)
-            self.history.add_items({"rgb_loss": np.mean(rgb_losses),
+            self.history.add_items({"rgb_loss": np.mean(rgb_losses[:-1]),
                                     "rgb_acc": acc_rgb,
                                     "val_rgb_loss": valid_result["valid_rgb_loss"],
                                     "val_rgb_acc": valid_result["valid_rgb_acc"]})
@@ -98,14 +96,14 @@ class UniModalTrainLoop(object):
                                   " RGB_acc: {:.1f}%,"
                                   " val_RGB_loss: {:.2f},"
                                   " val_RGB_acc: {:.1f}%".format(epoch,
-                                                                 np.mean(rgb_losses),
+                                                                 np.mean(rgb_losses[:-1]),
                                                                  acc_rgb * 100,
                                                                  valid_result["valid_rgb_loss"],
                                                                  valid_result["valid_rgb_acc"] * 100),
                       title="metrics")
             self.discord.send_message(fields=[{"name": "Epoch", "value": "{}".format(epoch), "inline": True},
                                               {"name": "RGB_loss",
-                                               "value": "{:.2f}".format(np.mean(rgb_losses[-2])),
+                                               "value": "{:.2f}".format(np.mean(rgb_losses[:-1])),
                                                "inline": True},
                                               {"name": "RGB_acc",
                                                "value": "{:.1f}%".format(acc_rgb * 100),
