@@ -52,6 +52,9 @@ try:
     train_loop.run_loop()
 except KeyboardInterrupt:
     write_log("training", "training is stopped by keyboard interrupt", title="error", print_out=True, color="red")
+    discord.send_message(fields=[{"name": "Error",
+                                  "value": "Training is stopped by keyboard interrupt",
+                                  "inline": True}])
 except Exception:
     discord.send_message(fields=[{"name": "Error",
                                   "value": "Training is stopped with error: {}".format(traceback.format_exc()),
@@ -59,4 +62,4 @@ except Exception:
     write_log("training", "training is stopped with error:\n{}".format(traceback.format_exc()), title="error",
               print_out=True, color="red")
 finally:
-    train_loop.save_model("end")
+    train_loop.save_models("end")
