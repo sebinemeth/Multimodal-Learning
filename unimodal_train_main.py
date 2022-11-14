@@ -5,7 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchsummary import summary
 
 from utils.log_maker import start_log_maker, write_log
-from utils.arg_parser import get_config_dict
+from utils.arg_parser import get_config_dict, print_to_discord
 from utils.discord import DiscordBot
 from utils_training.get_loaders import get_loaders
 from utils_training.unimodal_train_loop import UniModalTrainLoop
@@ -31,6 +31,7 @@ os.makedirs(model_save_dir, exist_ok=True)
 config_dict["model_save_dir"] = model_save_dir
 
 discord = DiscordBot()
+print_to_discord(discord, config_dict)
 
 train_loader, valid_loader = get_loaders(config_dict)
 rgb_cnn, rgb_optimizer = get_models(config_dict, only_rgb=True)
