@@ -76,7 +76,6 @@ def get_config_dict():
     # Training parameters
     opt.add_argument("--epoch", default=None, type=str2int, help="number of epochs")
     opt.add_argument("--learning_rate", default=None, type=str2float, help="starting value of learning rate")
-    opt.add_argument("--num_of_classes", default=None, type=str2int, help="number of classes")
     opt.add_argument("--only_with_gesture", default=None, type=str2bool, help="training only with gestures")
     opt.add_argument("--train_batch_size", default=None, type=str2int, help="batch size during training")
     opt.add_argument("--val_batch_size", default=None, type=str2int, help="batch size during validation")
@@ -126,6 +125,11 @@ def get_config_dict():
         for key, item in vars(args).items():
             if item is not None:
                 config_dict[key] = item
+
+    if len(config_dict["used_classes"]) > 0:
+        config_dict["num_of_classes"] = len(config_dict["used_classes"])
+    else:
+        config_dict["num_of_classes"] = 25
 
     config_dict["base_dir_path"] = base_dir_path
     config_dict["log_dir_path"] = log_dir_path

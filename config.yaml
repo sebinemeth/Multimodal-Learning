@@ -8,7 +8,6 @@ epoch: 100
 learning_rate: 0.0001
 lambda: 0.05  # 50 x 10^-3
 dropout_prob: 0
-num_of_classes: 25
 cover_ratio: 0.5
 tb_batch_freq: 100
 
