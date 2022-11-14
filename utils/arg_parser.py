@@ -164,6 +164,8 @@ def print_to_discord(discord: DiscordBot, dictionary: dict):
     for key, value in dictionary.items():
         fields.append({"name": key, "value": value, "inline": True})
 
+    print(fields)
+    exit()
     discord.send_message(fields=fields)
 
 

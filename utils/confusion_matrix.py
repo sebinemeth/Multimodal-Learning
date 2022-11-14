@@ -20,4 +20,3 @@ def plot_confusion_matrix(_y_test, predictions, epoch, config_dict, post_fix="")
                   title="plot cm")
         return ""
 
-
