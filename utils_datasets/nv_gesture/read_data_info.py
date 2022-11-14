@@ -71,7 +71,12 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
         max_frame_idx = annotations[i]['max_frame_idx']
         begin_t = int(annotations[i]['start_frame'])
         end_t = int(annotations[i]['end_frame'])
-        label = int(annotations[i]['label'])
+
+        if len(config_dict["used_classes"]) > 0:
+            # map labels from 0 to num of classes - 1
+            label = config_dict["used_classes"].index(int(annotations[i]['label']))
+        else:
+            label = int(annotations[i]['label'])
 
         if len(config_dict["used_classes"]) > 0 and label not in config_dict["used_classes"]:
             # if config_dict["used_classes"] is empty, each class will be used
