@@ -159,13 +159,10 @@ def print_dict(dictionary: dict):
 
 def print_to_discord(discord: DiscordBot, dictionary: dict):
     fields = list()
-    fields.append({"name": "Training started with parameters", "value": "", "inline": True})
 
     for key, value in dictionary.items():
         fields.append({"name": key, "value": value, "inline": True})
 
-    print(fields)
-    exit()
-    discord.send_message(fields=fields)
+    discord.send_message(title="Training started with parameters:", fields=fields)
 
 
