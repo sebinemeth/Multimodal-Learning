@@ -104,9 +104,9 @@ class UniModalTrainLoop(object):
                                                "inline": True}],
                                       file_names=[cm_path]
                                       )
-            self.save_model(epoch)
+            self.save_models(epoch)
 
-    def save_model(self, epoch):
+    def save_models(self, epoch):
         write_log("training", "models are saved", title="save models")
         torch.save({'epoch': epoch,
                     'model_state_dict': self.rgb_cnn.state_dict(),
