@@ -66,7 +66,7 @@ def get_config_dict():
     parser = argparse.ArgumentParser()
     opt = parser.add_argument_group("optional arguments")
 
-    opt.add_argument("--name", default="ga_test", required=True, help="name of the training")
+    opt.add_argument("--name", default="ga_test", type=str2str, help="name of the training")
     opt.add_argument("--config_yaml", default="./config.yaml", type=str2str, help="path to the config yaml file")
 
     opt.add_argument("--print_summary", default=False, type=str2bool, help="training only with gestures")
