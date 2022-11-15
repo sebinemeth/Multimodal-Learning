@@ -86,7 +86,6 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader, epoc
         tq = tqdm(total=(len(valid_loader)))
         tq.set_description('Validation')
         for batch_idx, (rgb, _, y) in enumerate(valid_loader):
-            print(y)
             rgb, y = rgb.to(device), y.to(device)
             rgb_out, _ = model_rgb(rgb)
             # loss_rgb = criterion(rgb_out, torch.max(y, 1)[1])  # index of the max log-probability
@@ -111,5 +110,5 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader, epoc
         valid_rgb_acc = rgb_correct / total
         valid_rgb_loss = np.mean(rgb_loss)  # type: float
         plot_confusion_matrix(np.concatenate(y_test, axis=0), np.concatenate(predictions, axis=0),
-                              epoch, config_dict, post_fix="rgb")
+                              epoch, config_dict, post_fix="rgb_val")
         return {'valid_rgb_loss': valid_rgb_loss, 'valid_rgb_acc': valid_rgb_acc}

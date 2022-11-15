@@ -13,6 +13,7 @@ from utils_training.get_models import get_models
 from utils.history import History
 from utils.callbacks import EarlyStopping, CallbackRunner, EarlyStopException
 
+
 def main():
     start_log_maker()
     config_dict = get_config_dict()

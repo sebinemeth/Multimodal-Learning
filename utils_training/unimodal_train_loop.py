@@ -5,6 +5,7 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
+from utils.confusion_matrix import plot_confusion_matrix
 from utils.tensorboard_utils import update_tensorboard_train, update_tensorboard_val
 from utils_training.validation import unimodal_validation_step
 from utils.log_maker import write_log
@@ -43,6 +44,9 @@ class UniModalTrainLoop(object):
             rgb_losses = [[]]
             train_result = dict()
 
+            y_train = list()
+            predictions = list()
+
             rgb_correct = 0
             total = 0
             tb_step = 0
@@ -50,7 +54,6 @@ class UniModalTrainLoop(object):
             tq = tqdm(total=(len(self.train_loader)))
             tq.set_description('ep {}'.format(epoch))
             for batch_idx, (rgb, _, y) in enumerate(self.train_loader):
-                print(y)
                 # distribute data to device
                 rgb = rgb.to(self.config_dict["device"])
                 y = y.to(self.config_dict["device"])
@@ -70,6 +73,11 @@ class UniModalTrainLoop(object):
                 _, rgb_predicted = rgb_out.max(1)
                 rgb_correct += rgb_predicted.eq(y).sum().item()
 
+                y_train.append(y.cpu().numpy())
+                predictions.append(rgb_predicted.cpu().numpy())
+                # print(y.cpu().numpy())
+                # print(rgb_predicted.cpu().numpy())
+
                 acc_rgb = rgb_correct / total
 
                 tq.update(1)
@@ -84,6 +92,8 @@ class UniModalTrainLoop(object):
                     tb_step += 1
                     rgb_losses.append([])
 
+            plot_confusion_matrix(np.concatenate(y_train, axis=0), np.concatenate(predictions, axis=0),
+                                  epoch, self.config_dict, post_fix="rgb_train")
             valid_result = unimodal_validation_step(model_rgb=self.rgb_cnn, criterion=self.criterion,
                                                     epoch=epoch, valid_loader=self.valid_loader,
                                                     config_dict=self.config_dict)
@@ -115,7 +125,8 @@ class UniModalTrainLoop(object):
                                               {"name": "val_RGB_acc",
                                                "value": "{:.1f}%".format(valid_result["valid_rgb_acc"] * 100),
                                                "inline": True}],
-                                      file_names=[self.config_dict["last_cm_path"]]
+                                      file_names=[self.config_dict["last_cm_path_rgb_train"],
+                                                  self.config_dict["last_cm_path_rgb_val"]]
                                       )
             self.save_models(epoch)
             self.callback_runner.on_epoch_end(epoch)
