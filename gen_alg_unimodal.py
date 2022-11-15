@@ -13,11 +13,11 @@ def fitness(x):
     with open(base_config_yaml_path, 'r') as yaml_file:
         config_dict = yaml.safe_load(yaml_file)
 
-    config_dict["learning_rate"] = 10 ** (-x[0])
-    config_dict["dropout_prob"] = x[1]
-    config_dict["cover_ratio"] = x[2]
-    config_dict["sample_duration"] = x[3]
-    config_dict["frame_jump"] = x[4]
+    config_dict["learning_rate"] = float(10 ** (-x[0]))
+    config_dict["dropout_prob"] = float(x[1])
+    config_dict["cover_ratio"] = float(x[2])
+    config_dict["sample_duration"] = int(x[3])
+    config_dict["frame_jump"] = int(x[4])
 
     config_dict["train_batch_size"] = 6 / 64 / config_dict["sample_duration"] * config_dict["frame_jump"]
     config_dict["val_batch_size"] = 6 / 64 / config_dict["sample_duration"] * config_dict["frame_jump"]
