@@ -38,7 +38,8 @@ def main() -> History:
     print_to_discord(discord, config_dict)
 
     history = History(keys=["rgb_loss", "rgb_acc", "val_rgb_loss", "val_rgb_acc"])
-    callback_runner = CallbackRunner(callbacks=[EarlyStopping(key="val_rgb_loss", patience=4, delta=0.02)], history=history)
+    callback_runner = CallbackRunner(callbacks=[EarlyStopping(key="val_rgb_loss", patience=4, delta=0.02)],
+                                     history=history)
 
     train_loader, valid_loader = get_loaders(config_dict)
     rgb_cnn, rgb_optimizer = get_models(config_dict, only_rgb=True)

@@ -9,7 +9,7 @@ config_yaml_path = "./training_outputs/unimodal_rgb_5_2/2022-11-15T11:47/log/con
 with open(config_yaml_path, 'r') as yaml_file:
     config_dict = yaml.safe_load(yaml_file)
 
-config_dict["rgb_ckp_model_path"] = "./training_outputs/unimodal_rgb_5_2/2022-11-15T11:47/model/model_rgb_18.pt"
+config_dict["rgb_ckp_model_path"] = "./training_outputs/unimodal_rgb_5_2/2022-11-15T11:47/model/model_rgb_19.pt"
 
 rgb_cnn, _ = get_models(config_dict, only_rgb=True)
 rgb_cnn.eval()

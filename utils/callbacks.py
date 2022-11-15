@@ -31,13 +31,17 @@ class EarlyStopping(Callback):
         self.best_value = None
         self.stop = False
 
+        if key.find("loss") != -1:
+            self.multiplier = -1
+        else:
+            self.multiplier = 1
+
     def on_epoch_end(self, epoch: int, history: History):
         current_value = history.get_last(self.key)
 
-        if epoch == 0 or abs(current_value - self.best_value) > self.delta:
+        if epoch == 0 or self.multiplier * (current_value - self.best_value) > self.delta:
             self.best_epoch = epoch
             self.best_value = current_value
-            return
         else:
             if epoch - self.best_epoch > self.patience:
                 raise EarlyStopException
