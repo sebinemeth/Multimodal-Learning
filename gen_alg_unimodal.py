@@ -31,25 +31,25 @@ def fitness(x):
 
 
 var_bounds = np.array([[3, 4],      # learning_rate
-                     [0, 0.5],    # dropout_prob
-                     [0.1, 1],    # cover_ratio
-                     [16, 84],    # sample_duration
-                     [1, 4]])     # frame_jump
+                       [0, 0.5],    # dropout_prob
+                       [0.1, 1],    # cover_ratio
+                       [16, 84],    # sample_duration
+                       [1, 4]])     # frame_jump
 
 var_types = np.array([['int'],
-                    ['real'],
-                    ['real'],
-                    ['int'],
-                    ['int']])
+                      ['real'],
+                      ['real'],
+                      ['int'],
+                      ['int']])
 
 algorithm_param = {'max_num_iteration': None,
-                   'population_size': 100,
+                   'population_size': 5,
                    'mutation_probability': 0.1,
-                   'elit_ratio': 0.01,
+                   'elit_ratio': 0.2,
                    'crossover_probability': 0.5,
                    'parents_portion': 0.3,
                    'crossover_type': 'uniform',
-                   'max_iteration_without_improv': None}
+                   'max_iteration_without_improv': 5}
 
 model = ga(function=fitness,
            dimension=len(var_bounds),
