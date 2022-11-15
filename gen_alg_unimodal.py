@@ -19,8 +19,8 @@ def fitness(x):
     config_dict["sample_duration"] = int(x[3])
     config_dict["frame_jump"] = int(x[4])
 
-    config_dict["train_batch_size"] = int(6 / 64 / config_dict["sample_duration"] * config_dict["frame_jump"])
-    config_dict["val_batch_size"] = int(6 / 64 / config_dict["sample_duration"] * config_dict["frame_jump"])
+    config_dict["train_batch_size"] = int(6 * 64 / config_dict["sample_duration"] * config_dict["frame_jump"])
+    config_dict["val_batch_size"] = int(6 * 64 / config_dict["sample_duration"] * config_dict["frame_jump"])
 
     with open(ga_config_yaml_path, 'w') as outfile:
         yaml.dump(config_dict, outfile, default_flow_style=False)
