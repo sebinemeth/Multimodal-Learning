@@ -3,6 +3,7 @@ cachetools==5.0.0
 certifi==2021.10.8
 charset-normalizer==2.0.12
 discordwebhook==1.0.3
+geneticalgorithm=1.0.2
 gitdb==4.0.9
 GitPython==3.1.29
 google-auth==2.6.6
@@ -41,4 +42,5 @@ typing_extensions==4.2.0
 urllib3==1.26.9
 Werkzeug==2.1.2
 zipp==3.8.0
+
 

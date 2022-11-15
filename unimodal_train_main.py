@@ -14,7 +14,7 @@ from utils.history import History
 from utils.callbacks import EarlyStopping, CallbackRunner, EarlyStopException
 
 
-def main():
+def main() -> History:
     start_log_maker()
     config_dict = get_config_dict()
 
@@ -44,7 +44,7 @@ def main():
     rgb_cnn, rgb_optimizer = get_models(config_dict, only_rgb=True)
 
     if config_dict["print_summary"]:
-        summary(rgb_cnn, input_size=(3, 32, 224, 224))  # (batch size, chanel, duration, width, height)
+        summary(rgb_cnn, input_size=(3, 32, 224, 224))  # (chanel, duration, width, height)
 
     criterion = torch.nn.CrossEntropyLoss()
 
