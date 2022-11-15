@@ -5,7 +5,6 @@ from geneticalgorithm import geneticalgorithm as ga
 
 from unimodal_train_main import main
 
-# pip install geneticalgorithm
 base_config_yaml_path = "./ori_config.yaml"
 ga_config_yaml_path = "./config.yaml"
 
