@@ -1,9 +1,11 @@
 import threading
 import yaml
+import traceback
 import numpy as np
 from geneticalgorithm import geneticalgorithm as ga
 
 from unimodal_train_main import main
+from utils.discord import DiscordBot
 
 base_config_yaml_path = "./ori_config.yaml"
 ga_config_yaml_path = "./config.yaml"
@@ -56,5 +58,14 @@ model = ga(function=fitness,
            variable_boundaries=var_bounds,
            function_timeout=threading.TIMEOUT_MAX)
 
-model.run()
-print(model.report)
+discord = DiscordBot()
+
+try:
+    model.run()
+    print(model.report)
+except Exception:
+    discord.send_message(fields=[{"name": "Error",
+                                  "value": "Parameter search is stopped with error: {}".format(traceback.format_exc()),
+                                  "inline": True}])
+
+
