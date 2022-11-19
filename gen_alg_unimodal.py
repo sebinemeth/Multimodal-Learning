@@ -6,6 +6,7 @@ from geneticalgorithm import geneticalgorithm as ga
 
 from unimodal_train_main import main
 from utils.discord import DiscordBot
+from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType
 
 base_config_yaml_path = "./ori_config.yaml"
 ga_config_yaml_path = "./config.yaml"
@@ -28,7 +29,7 @@ def fitness(x):
         yaml.dump(config_dict, outfile, default_flow_style=False)
 
     history = main()
-    return history.get_last("val_rgb_loss")
+    return history.get_last((SubsetType.VAL, ModalityType.RGB, MetricType.LOSS))
 
 
 var_bounds = np.array([[3, 5],      # weight_decay (exp)

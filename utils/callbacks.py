@@ -58,7 +58,7 @@ class EarlyStopping(Callback):
 
 class SaveModel(Callback):
     def __init__(self, history: History, model: torch.nn.Module, modality: ModalityType, config_dict: dict,
-                 only_best_key: str = None):
+                 only_best_key: Tuple[SubsetType, ModalityType, MetricType] = None):
         """
         Parameters
         ----------
