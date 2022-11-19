@@ -45,14 +45,18 @@ class NV(data.Dataset):
 
         if self.spatial_transform is not None:
             self.spatial_transform.randomize_parameters()
-            rgb_images = [self.spatial_transform(rgb_image) for rgb_image in rgb_images]
-            depth_images = [self.spatial_transform(depth_image) for depth_image in depth_images]
+            if len(rgb_images) > 0:
+                rgb_images = [self.spatial_transform(rgb_image) for rgb_image in rgb_images]
+            if len(depth_images) > 0:
+                depth_images = [self.spatial_transform(depth_image) for depth_image in depth_images]
 
-        rgb = torch.stack(rgb_images, dim=1)  # shape: (batch size, chanel, duration, width, height)
-        depth = torch.stack(depth_images, dim=1)  # shape: (batch size, chanel, duration, width, height)
+        if len(rgb_images) > 0:
+            rgb_images = torch.stack(rgb_images, dim=1)  # shape: (batch size, chanel, duration, width, height)
+        if len(depth_images) > 0:
+            depth_images = torch.stack(depth_images, dim=1)  # shape: (batch size, chanel, duration, width, height)
 
         target = self.data_info_list[index]["label"]  # shape: (batch size)
-        return rgb, depth, target
+        return rgb_images, depth_images, target
 
     def __len__(self):
         return len(self.data_info_list)

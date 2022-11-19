@@ -8,7 +8,7 @@ epoch: 100
 learning_rate: 0.0001
 lambda: 0.05  # 50 x 10^-3
 dropout_prob: 0
-cover_ratio: 0.5
+weight_decay: 0.00001
 tb_batch_freq: 100
 
 img_x: 224
@@ -20,6 +20,7 @@ depth_y: 224
 # dataset parameters
 sample_duration: 64 # 64
 frame_jump: 1
+cover_ratio: 0.5
 only_with_gesture: True
 used_classes: [10, 14, 20, 22, 24]
 

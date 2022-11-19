@@ -50,7 +50,7 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
     """
     if subset_type == SubsetType.TRAIN:
         annotation_file_path = config_dict["train_annotation_path"]
-    elif subset_type == SubsetType.VALIDATION:
+    elif subset_type == SubsetType.VAL:
         annotation_file_path = config_dict["val_annotation_path"]
     else:
         raise ValueError
@@ -92,6 +92,7 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
                 # the cut is provided before the end_t
                 # the cover ratio is the ratio of frames after begin_t
                 cover_ratio = np.sum(np.array(frame_indices) > begin_t) / len(frame_indices)
+
                 if cover_ratio < config_dict["cover_ratio"]:
                     continue
 

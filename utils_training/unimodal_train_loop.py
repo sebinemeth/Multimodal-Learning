@@ -12,6 +12,7 @@ from utils.log_maker import write_log
 from utils.history import History
 from utils.callbacks import CallbackRunner
 from utils.discord import DiscordBot
+from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType
 
 
 class UniModalTrainLoop(object):
@@ -75,8 +76,6 @@ class UniModalTrainLoop(object):
 
                 y_train.append(y.cpu().numpy())
                 predictions.append(rgb_predicted.cpu().numpy())
-                # print(y.cpu().numpy())
-                # print(rgb_predicted.cpu().numpy())
 
                 acc_rgb = rgb_correct / total
 
@@ -98,10 +97,10 @@ class UniModalTrainLoop(object):
                                                     epoch=epoch, valid_loader=self.valid_loader,
                                                     config_dict=self.config_dict)
             update_tensorboard_val(tb_writer=self.tb_writer, global_step=epoch, valid_dict=valid_result, only_rgb=True)
-            self.history.add_items({"rgb_loss": np.mean(sum(rgb_losses, [])),
-                                    "rgb_acc": acc_rgb,
-                                    "val_rgb_loss": valid_result["valid_rgb_loss"],
-                                    "val_rgb_acc": valid_result["valid_rgb_acc"]})
+            self.history.add_items({(SubsetType.TRAIN, ModalityType.RGB, MetricType.LOSS): np.mean(sum(rgb_losses, [])),
+                                    (SubsetType.TRAIN, ModalityType.RGB, MetricType.ACC): acc_rgb,
+                                    (SubsetType.VAL, ModalityType.RGB, MetricType.LOSS): valid_result["valid_rgb_loss"],
+                                    (SubsetType.VAL, ModalityType.RGB, MetricType.ACC): valid_result["valid_rgb_acc"]})
             write_log("training", "epoch: {},"
                                   " RGB_loss: {:.2f},"
                                   " RGB_acc: {:.1f}%,"
@@ -128,12 +127,5 @@ class UniModalTrainLoop(object):
                                       file_names=[self.config_dict["last_cm_path_rgb_train"],
                                                   self.config_dict["last_cm_path_rgb_val"]]
                                       )
-            self.save_models(epoch)
             self.callback_runner.on_epoch_end(epoch)
 
-    def save_models(self, epoch):
-        write_log("training", "models are saved", title="save models")
-        torch.save({'epoch': epoch,
-                    'model_state_dict': self.rgb_cnn.state_dict(),
-                    'optimizer_state_dict': self.rgb_optimizer.state_dict()},
-                   os.path.join(self.config_dict["model_save_dir"], "model_rgb_{}.pt".format(epoch)))

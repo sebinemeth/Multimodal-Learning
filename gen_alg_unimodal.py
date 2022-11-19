@@ -15,7 +15,7 @@ def fitness(x):
     with open(base_config_yaml_path, 'r') as yaml_file:
         config_dict = yaml.safe_load(yaml_file)
 
-    config_dict["learning_rate"] = float(10 ** (-x[0]))
+    config_dict["weight_decay"] = float(10 ** (-x[0]))
     config_dict["dropout_prob"] = float(x[1])
     config_dict["cover_ratio"] = float(x[2])
     config_dict["sample_duration"] = int(x[3])
@@ -31,7 +31,7 @@ def fitness(x):
     return history.get_last("val_rgb_loss")
 
 
-var_bounds = np.array([[3, 4],      # learning_rate
+var_bounds = np.array([[3, 5],      # weight_decay (exp)
                        [0, 0.5],    # dropout_prob
                        [0.1, 1],    # cover_ratio
                        [16, 84],    # sample_duration

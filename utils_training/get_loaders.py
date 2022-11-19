@@ -5,12 +5,12 @@ from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType
 from utils_transforms.spatial_transforms import Compose, ToTensor, Normalize, Scale
 
 
-def get_loaders(config_dict):
+def get_loaders(config_dict, modality: ModalityType):
     norm_method = Normalize([0, 0, 0], [1, 1, 1])
     spatial_transform = Compose([Scale((config_dict["img_x"], config_dict["img_y"])), ToTensor(), norm_method])
 
     training_data = NV(subset_type=SubsetType.TRAIN,
-                       modality=ModalityType.RGB_DEPTH,
+                       modality=modality,
                        config_dict=config_dict,
                        spatial_transform=spatial_transform,
                        temporal_transform=None)
@@ -21,8 +21,8 @@ def get_loaders(config_dict):
                               num_workers=config_dict["val_num_of_workers"],
                               pin_memory=True)
 
-    valid_data = NV(subset_type=SubsetType.VALIDATION,
-                    modality=ModalityType.RGB_DEPTH,
+    valid_data = NV(subset_type=SubsetType.VAL,
+                    modality=modality,
                     config_dict=config_dict,
                     spatial_transform=spatial_transform,
                     temporal_transform=None)

@@ -11,7 +11,9 @@ def get_models(config_dict, only_rgb=False):
                           dropout_prob=config_dict["dropout_prob"],
                           name='inception').to(config_dict["device"])
 
-    rgb_optimizer = torch.optim.Adam(rgb_cnn.parameters(), lr=config_dict["learning_rate"])
+    rgb_optimizer = torch.optim.Adam(rgb_cnn.parameters(),
+                                     lr=config_dict["learning_rate"],
+                                     weight_decay=config_dict["weight_decay"])
 
     if config_dict["rgb_ckp_model_path"] is not None:
         try:
