@@ -8,6 +8,12 @@ from utils.log_maker import write_log
 
 def plot_confusion_matrix(_y_test, predictions, epoch, config_dict, post_fix=""):
     try:
+        if isinstance(_y_test, list):
+            _y_test = np.concatenate(_y_test, axis=0)
+
+        if isinstance(predictions, list):
+            predictions = np.concatenate(predictions, axis=0)
+
         cm = confusion_matrix(_y_test, predictions, normalize="pred")
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=config_dict["used_classes"])  # np.unique(_y_test))
         fig, ax = plt.subplots(figsize=(15, 15))

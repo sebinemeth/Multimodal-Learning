@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List, Tuple
 
 
 class SubsetType(Enum):
@@ -16,4 +17,8 @@ class ModalityType(Enum):
 class MetricType(Enum):
     LOSS = 1
     ACC = 2
+
+
+def keys_to_str(keys: Tuple[SubsetType, ModalityType, MetricType]) -> str:
+    return '_'.join([key.name for key in keys])
 

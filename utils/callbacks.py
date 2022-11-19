@@ -1,11 +1,12 @@
 import os
 import torch
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List, Tuple
+from torch.utils.tensorboard import SummaryWriter
 
 from utils.history import History
 from utils.log_maker import write_log
-from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType
+from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType, keys_to_str
 
 
 class EarlyStopException(Exception):
@@ -13,7 +14,9 @@ class EarlyStopException(Exception):
 
 
 class Callback(ABC):
-    @abstractmethod
+    def on_batch_end(self, batch_idx: int):
+        pass
+
     def on_epoch_end(self, epoch: int):
         pass
 
@@ -46,7 +49,7 @@ class EarlyStopping(Callback):
             self.multiplier = 1
 
     def on_epoch_end(self, epoch: int):
-        current_value = self.history.get_last(self.key)
+        current_value = self.history.get_epoch_last_item(self.key)
 
         if epoch == 0 or self.multiplier * (current_value - self.best_value) > self.delta:
             self.best_epoch = epoch
@@ -77,7 +80,7 @@ class SaveModel(Callback):
     def on_epoch_end(self, epoch: int):
         if self.only_best_key is None:
             self.save_model("{}_{}".format(self.modality.name, epoch))
-        elif self.history.is_best_last(self.only_best_key):
+        elif self.history.is_epoch_best_last(self.only_best_key):
             self.save_model("{}_{}".format(self.modality.name, "best"))
 
     def on_training_end(self):
@@ -90,9 +93,51 @@ class SaveModel(Callback):
                    os.path.join(self.config_dict["model_save_dir"], "{}.pt".format(model_name)))
 
 
+class Tensorboard(Callback):
+    def __init__(self, history: History,
+                 config_dict: dict,
+                 batch_end_keys: List[Tuple[SubsetType, ModalityType, MetricType]],
+                 epoch_end_keys: List[Tuple[SubsetType, ModalityType, MetricType]]):
+        self.history = history
+        self.config_dict = config_dict
+        tb_log_path = os.path.join(config_dict["base_dir_path"], "tensorboard_logs")
+        os.makedirs(tb_log_path, exist_ok=True)
+        self.tb_writer = SummaryWriter(log_dir=tb_log_path)
+
+        self.batch_end_keys = batch_end_keys
+        self.epoch_end_keys = epoch_end_keys
+
+        self.on_batch_end_step = 0
+
+    def on_batch_end(self, batch_idx: int):
+        if batch_idx % self.config_dict["tb_batch_freq"] == 0:
+            for key in self.batch_end_keys:
+                if key[2] == MetricType.LOSS:
+                    value = self.history.get_batch_mean(key)
+                else:
+                    value = self.history.get_batch_last(key)
+
+                self.tb_writer.add_scalar(tag=keys_to_str(key),
+                                          scalar_value=value,
+                                          global_step=self.on_batch_end_step)
+
+        self.on_batch_end_step += 1
+
+    def on_epoch_end(self, epoch: int):
+        for key in self.epoch_end_keys:
+            value = self.history.get_epoch_last_item(key)
+            self.tb_writer.add_scalar(tag=keys_to_str(key),
+                                      scalar_value=value,
+                                      global_step=epoch)
+
+
 class CallbackRunner(object):
     def __init__(self, callbacks: List[Callback]):
         self.callbacks = callbacks
+
+    def on_batch_end(self, batch_idx: int):
+        for callback in self.callbacks:
+            callback.on_epoch_end(batch_idx)
 
     def on_epoch_end(self, epoch: int):
         for callback in self.callbacks:
@@ -101,3 +146,4 @@ class CallbackRunner(object):
     def on_training_end(self):
         for callback in self.callbacks:
             callback.on_training_end()
+

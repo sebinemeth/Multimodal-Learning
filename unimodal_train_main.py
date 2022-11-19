@@ -1,7 +1,6 @@
 import os
-import traceback
 import torch
-from torch.utils.tensorboard import SummaryWriter
+import traceback
 from torchsummary import summary
 
 from utils.log_maker import start_log_maker, write_log
@@ -11,8 +10,13 @@ from utils_training.get_loaders import get_loaders
 from utils_training.unimodal_train_loop import UniModalTrainLoop
 from utils_training.get_models import get_models
 from utils.history import History
-from utils.callbacks import SaveModel, EarlyStopping, CallbackRunner, EarlyStopException
+from utils.callbacks import Tensorboard, SaveModel, EarlyStopping, CallbackRunner, EarlyStopException
 from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType
+
+
+def write_end_log(discord: DiscordBot, text: str, title: str):
+    discord.send_message(fields=[{"name": title, "value": text, "inline": True}])
+    write_log("training", text, title=title, print_out=True, color="red")
 
 
 def main() -> History:
@@ -24,12 +28,6 @@ def main() -> History:
     device = torch.device("cuda" if use_cuda else "cpu")  # use CPU or GPU
     write_log("init", str(device), title="used device")
     config_dict["device"] = device
-
-    # TODO: to callback
-    # Initialize Tensorboard
-    tb_log_path = os.path.join(config_dict["base_dir_path"], "tensorboard_logs")
-    os.makedirs(tb_log_path, exist_ok=True)
-    tb_writer = SummaryWriter(log_dir=tb_log_path)
 
     # Make save folder for the model
     model_save_dir = os.path.join(config_dict["base_dir_path"], "model")
@@ -46,20 +44,31 @@ def main() -> History:
         summary(rgb_cnn, input_size=(3, 32, 224, 224))  # (chanel, duration, width, height)
 
     criterion = torch.nn.CrossEntropyLoss()
-    history = History(keys=[(SubsetType.TRAIN, ModalityType.RGB, MetricType.LOSS),
-                            (SubsetType.TRAIN, ModalityType.RGB, MetricType.ACC),
-                            (SubsetType.VAL, ModalityType.RGB, MetricType.LOSS),
-                            (SubsetType.VAL, ModalityType.RGB, MetricType.ACC)])
-    callback_runner = CallbackRunner(callbacks=[EarlyStopping(history=history,
-                                                              key=(SubsetType.VAL, ModalityType.RGB, MetricType.LOSS),
-                                                              patience=4, delta=0.02),
-                                                SaveModel(history=history,
-                                                          model=rgb_cnn,
-                                                          modality=ModalityType.RGB,
-                                                          config_dict=config_dict,
-                                                          only_best_key=(SubsetType.VAL,
-                                                                         ModalityType.RGB,
-                                                                         MetricType.LOSS))])
+    history = History(config_dict=config_dict,
+                      epoch_keys=[(SubsetType.TRAIN, ModalityType.RGB, MetricType.LOSS),
+                                  (SubsetType.TRAIN, ModalityType.RGB, MetricType.ACC),
+                                  (SubsetType.VAL, ModalityType.RGB, MetricType.LOSS),
+                                  (SubsetType.VAL, ModalityType.RGB, MetricType.ACC)],
+                      batch_keys=[(SubsetType.TRAIN, ModalityType.RGB, MetricType.LOSS),
+                                  (SubsetType.TRAIN, ModalityType.RGB, MetricType.ACC)],
+                      discord=discord)
+    callback_runner = CallbackRunner(
+        callbacks=[EarlyStopping(history=history,
+                                 key=(SubsetType.VAL, ModalityType.RGB, MetricType.LOSS),
+                                 patience=4, delta=0.02),
+                   SaveModel(history=history,
+                             model=rgb_cnn,
+                             modality=ModalityType.RGB,
+                             config_dict=config_dict,
+                             only_best_key=(SubsetType.VAL,
+                                            ModalityType.RGB,
+                                            MetricType.LOSS)),
+                   Tensorboard(history=history,
+                               config_dict=config_dict,
+                               batch_end_keys=[(SubsetType.TRAIN, ModalityType.RGB, MetricType.LOSS),
+                                               (SubsetType.TRAIN, ModalityType.RGB, MetricType.ACC)],
+                               epoch_end_keys=[(SubsetType.VAL, ModalityType.RGB, MetricType.LOSS),
+                                               (SubsetType.VAL, ModalityType.RGB, MetricType.ACC)])])
 
     train_loop = UniModalTrainLoop(config_dict,
                                    rgb_cnn,
@@ -69,27 +78,16 @@ def main() -> History:
                                    valid_loader,
                                    history,
                                    callback_runner,
-                                   tb_writer,
                                    discord)
     try:
         train_loop.run_loop()
     except KeyboardInterrupt:
-        write_log("training", "training is stopped by keyboard interrupt", title="error", print_out=True, color="red")
-        discord.send_message(fields=[{"name": "Error",
-                                      "value": "Training is stopped by keyboard interrupt",
-                                      "inline": True}])
+        write_end_log(discord=discord, text="training is stopped by keyboard interrupt", title="error")
     except EarlyStopException:
-        write_log("training", "training is stopped by early stopping callback", title="earlystopping", print_out=True,
-                  color="red")
-        discord.send_message(fields=[{"name": "Early stop",
-                                      "value": "Training is stopped by early stopping callback",
-                                      "inline": True}])
+        write_end_log(discord=discord, text="training is stopped by early stopping callback", title="early stopping")
     except Exception:
-        discord.send_message(fields=[{"name": "Error",
-                                      "value": "Training is stopped with error: {}".format(traceback.format_exc()),
-                                      "inline": True}])
-        write_log("training", "training is stopped with error:\n{}".format(traceback.format_exc()), title="error",
-                  print_out=True, color="red")
+        write_end_log(discord=discord, text="Training is stopped with error: {}".format(traceback.format_exc()),
+                      title="error")
     finally:
         callback_runner.on_training_end()
 

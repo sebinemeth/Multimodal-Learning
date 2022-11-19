@@ -1,21 +1,3 @@
-import argparse
-import os
-from pathlib import Path
-from torch.utils.tensorboard import SummaryWriter
-
-
-def initialize_tensorboard(log_dir, common_name):
-    """
-    In distributed training, tensorboard doesn't work with multiple writers
-    reference: https://stackoverflow.com/a/37411400/4569025
-    """
-    tb_log_path = Path(log_dir).joinpath(common_name)
-    if not os.path.exists(tb_log_path):
-        os.mkdir(tb_log_path)
-    tb_writer = SummaryWriter(log_dir=str(tb_log_path))
-    return tb_writer
-
-
 def update_tensorboard_train(tb_writer, global_step, train_dict, only_rgb=False):
     """
     {"loss_rgb": mean_rgb, "loss_reg_rgb": mean_reg_rgb, "loss_depth": mean_depth,
@@ -56,11 +38,3 @@ def update_tensorboard_image(tb_writer, epoch, train_dict):
     tb_writer.add_image(tag='RGB feature map', img_tensor=train_dict['rgb_ft_map'].unsqueeze(dim=0), global_step=epoch)
     tb_writer.add_image(tag='Depth feature map', img_tensor=train_dict['depth_ft_map'].unsqueeze(dim=0),
                         global_step=epoch)
-
-
-def parse():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--save-as", metavar='FOLDER_NAME', required=True)
-    args = parser.parse_args()
-    # config = configparser.ConfigParser()
-    return args
