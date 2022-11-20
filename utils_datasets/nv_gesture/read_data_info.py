@@ -2,6 +2,7 @@ import os
 import numpy as np
 from tqdm import tqdm
 from glob import glob
+from statistics import mean
 
 from utils.log_maker import write_log
 from utils_datasets.nv_gesture.nv_utils import SubsetType
@@ -16,13 +17,14 @@ def print_stat(data_stat_dict: dict, num_of_all_samples: int):
         num_of_zeros = data_stat_dict[label]["num_of_zeros"]
         zero_percentage = num_of_zeros / data_stat_dict[label]["num_of_frames"] * 100
 
-        len_of_gesture = data_stat_dict[label]["len_of_gesture"]
-        line = "label: {}, lo gesture: {}, no. samples: {} ({:.2f}%), no. zeros: {} ({:.1f}%)".format(label,
-                                                                                                      len_of_gesture,
-                                                                                                      num_of_samples,
-                                                                                                      percentage,
-                                                                                                      num_of_zeros,
-                                                                                                      zero_percentage)
+        len_of_gesture = mean(data_stat_dict[label]["len_of_gesture"])
+        line = "label: {}, mean lo gesture: {}, no. samples: {} ({:.2f}%)," \
+               " no. zeros: {} ({:.1f}%)".format(label,
+                                                 len_of_gesture,
+                                                 num_of_samples,
+                                                 percentage,
+                                                 num_of_zeros,
+                                                 zero_percentage)
         log_lines.append(line)
 
     write_log("dataloader", "\n".join(log_lines), title="Data statistics", print_out=True, color="blue")
@@ -108,7 +110,8 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
 
         if label not in data_stat_dict:
             data_stat_dict[label] = {"num_of_samples": 0, "num_of_zeros": 0, "num_of_frames": 0,
-                                     "len_of_gesture": min(end_t, max_frame_idx) - begin_t}
+                                     "len_of_gesture": list()}
+        data_stat_dict[label]["len_of_gesture"].append(min(end_t, max_frame_idx) - begin_t)
 
         if config_dict["only_with_gesture"]:
             # TODO: end_t + 1 does not work
