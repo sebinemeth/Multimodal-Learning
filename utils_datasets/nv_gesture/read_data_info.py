@@ -18,7 +18,7 @@ def print_stat(data_stat_dict: dict, num_of_all_samples: int):
         zero_percentage = num_of_zeros / data_stat_dict[label]["num_of_frames"] * 100
 
         len_of_gesture = mean(data_stat_dict[label]["len_of_gesture"])
-        line = "label: {}, mean lo gesture: {}, no. samples: {} ({:.2f}%)," \
+        line = "label: {}, avg lo gesture: {:.1f}, no. samples: {} ({:.2f}%)," \
                " no. zeros: {} ({:.1f}%)".format(label,
                                                  len_of_gesture,
                                                  num_of_samples,
