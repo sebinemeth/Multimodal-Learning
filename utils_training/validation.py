@@ -108,7 +108,7 @@ def unimodal_validation_step(model_rgb: nn.Module, criterion, valid_loader, epoc
                            RGB_acc='{:.1f}%'.format(acc_rgb * 100))
 
         history.add_epoch_items({
-            (SubsetType.VAL, ModalityType.RGB, MetricType.LOSS): rgb_correct / total,
-            (SubsetType.VAL, ModalityType.RGB, MetricType.ACC): mean(rgb_loss_list)},
+            (SubsetType.VAL, ModalityType.RGB, MetricType.ACC): rgb_correct / total,
+            (SubsetType.VAL, ModalityType.RGB, MetricType.LOSS): mean(rgb_loss_list)},
             reset_batch=False)
         plot_confusion_matrix(y_test, predictions, epoch, config_dict, post_fix="rgb_val")
