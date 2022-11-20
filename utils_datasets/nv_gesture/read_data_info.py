@@ -7,6 +7,21 @@ from utils.log_maker import write_log
 from utils_datasets.nv_gesture.nv_utils import SubsetType
 
 
+def print_stat(data_stat_dict: dict, num_of_all_samples: int):
+    log_lines = list()
+    for label in sorted(data_stat_dict.keys()):
+        num_of_samples = data_stat_dict[label]["num_of_samples"]
+        percentage = num_of_samples / num_of_all_samples * 100
+
+        num_of_zeros = data_stat_dict[label]["num_of_zeros"]
+        zero_percentage = num_of_zeros / data_stat_dict[label]["num_of_frames"] * 100
+        line = "label: {}, no. samples: {} ({}%), no. zeros: {} ({}%)".format(label, num_of_samples, percentage,
+                                                                              num_of_zeros, zero_percentage)
+        log_lines.append(line)
+
+    write_log("dataloader", "\n".join(log_lines), title="Data statistics", print_out=True, color="blue")
+
+
 def get_annot_and_video_paths(annotation_file_path, root_path):
     """
     one line:
@@ -58,6 +73,7 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
     video_folders, annotations = get_annot_and_video_paths(annotation_file_path, root_path=config_dict["dataset_path"])
 
     data_info_list = list()
+    data_stat_dict = dict()
     for i in tqdm(range(len(video_folders)), desc="NV Dataset - {}".format(subset_type.name)):
         video_folder = os.path.join(config_dict["dataset_path"], video_folders[i])
 
@@ -82,11 +98,13 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
         sample_duration = config_dict["sample_duration"]
         num_classes = config_dict["num_classes"]
 
+        if label not in data_stat_dict:
+            data_stat_dict[label] = {"num_of_samples": 0, "num_of_zeros": 0, "num_of_frames": 0}
+
         if config_dict["only_with_gesture"]:
             # TODO: end_t + 1 does not work
             for last_frame_idx in range(min(end_t, max_frame_idx), begin_t, -1):
                 frame_indices = sorted([last_frame_idx - i for i in range(sample_duration)])
-                # frame_indices = sorted([last_frame_idx - (i * frame_jump) for i in range(sample_duration)])
                 assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)
 
                 # the cut is provided before the end_t
@@ -105,31 +123,36 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
                 }
 
                 data_info_list.append(sample)
+                data_stat_dict[label]["num_of_samples"] += 1
+                data_stat_dict[label]["num_of_zeros"] += len([idx for idx in frame_indices if idx < 0])
+                data_stat_dict[label]["num_of_frames"] += len(frame_indices)
         else:
-            for start_frame_idx in range(max_frame_idx + 1):
-                last_frame_idx = start_frame_idx + (sample_duration * frame_jump)
-                if last_frame_idx > max_frame_idx:
-                    break
+            # for start_frame_idx in range(max_frame_idx + 1):
+            #     last_frame_idx = start_frame_idx + (sample_duration * frame_jump)
+            #     if last_frame_idx > max_frame_idx:
+            #         break
+            #
+            #     frame_indices = sorted(list(range(start_frame_idx, last_frame_idx, frame_jump)))
+            #     assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)
+            #
+            #     if begin_t < last_frame_idx < end_t:
+            #         # last frame is a gesture
+            #         label = int(annotations[i]['label'])
+            #     else:
+            #         # last frame is not a gesture, last label belongs to invalid
+            #         label = num_classes - 1
+            #
+            #     # n_frames = end_t - begin_t + 1
+            #
+            #     sample = {
+            #         'video_folder': video_folder,
+            #         'frame_indices': frame_indices,
+            #         'label': label
+            #     }
+            #
+            #     data_info_list.append(sample)
+            raise NotImplementedError
 
-                frame_indices = sorted(list(range(start_frame_idx, last_frame_idx, frame_jump)))
-                assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)
-
-                if begin_t < last_frame_idx < end_t:
-                    # last frame is a gesture
-                    label = int(annotations[i]['label'])
-                else:
-                    # last frame is not a gesture, last label belongs to invalid
-                    label = num_classes - 1
-
-                # n_frames = end_t - begin_t + 1
-
-                sample = {
-                    'video_folder': video_folder,
-                    'frame_indices': frame_indices,
-                    'label': label
-                }
-
-                data_info_list.append(sample)
-
+        print_stat(data_stat_dict, len(data_info_list))
     return data_info_list
 
