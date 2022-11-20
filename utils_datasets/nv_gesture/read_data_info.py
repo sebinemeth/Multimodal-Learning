@@ -15,8 +15,8 @@ def print_stat(data_stat_dict: dict, num_of_all_samples: int):
 
         num_of_zeros = data_stat_dict[label]["num_of_zeros"]
         zero_percentage = num_of_zeros / data_stat_dict[label]["num_of_frames"] * 100
-        line = "label: {}, no. samples: {} ({}%), no. zeros: {} ({}%)".format(label, num_of_samples, percentage,
-                                                                              num_of_zeros, zero_percentage)
+        line = "label: {}, no. samples: {} ({:.2}%), no. zeros: {} ({:.1}%)".format(label, num_of_samples, percentage,
+                                                                                    num_of_zeros, zero_percentage)
         log_lines.append(line)
 
     write_log("dataloader", "\n".join(log_lines), title="Data statistics", print_out=True, color="blue")
@@ -43,9 +43,11 @@ def get_annot_and_video_paths(annotation_file_path, root_path):
             path, depth, color, duo_left, label = line.split(' ')
             path = path.split(":")[-1]
             max_index_color = int(list(sorted(glob(os.path.join(root_path, path,
-                                                                "sk_color_all/*.jpg"))))[-1].split('/')[-1].split('.')[0])
+                                                                "sk_color_all/*.jpg"))))[-1].split('/')[-1].split('.')[
+                                      0])
             max_index_depth = int(list(sorted(glob(os.path.join(root_path, path,
-                                                                "sk_depth_all/*.jpg"))))[-1].split('/')[-1].split('.')[0])
+                                                                "sk_depth_all/*.jpg"))))[-1].split('/')[-1].split('.')[
+                                      0])
             max_frame_idx = min(max_index_color, max_index_depth)
 
             annotation = {"start_frame": depth.split(":")[-2],
@@ -153,6 +155,5 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
             #     data_info_list.append(sample)
             raise NotImplementedError
 
-        print_stat(data_stat_dict, len(data_info_list))
+    print_stat(data_stat_dict, len(data_info_list))
     return data_info_list
-
