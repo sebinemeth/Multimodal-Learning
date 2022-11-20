@@ -19,7 +19,7 @@ def fitness(x):
     config_dict["weight_decay"] = float(10 ** (-x[0]))
     config_dict["dropout_prob"] = float(x[1])
     config_dict["cover_ratio"] = float(x[2])
-    config_dict["frame_jump"] = int(x[4])
+    config_dict["frame_jump"] = int(x[3])
 
     config_dict["train_batch_size"] = int(5 * 50 / config_dict["sample_duration"] * min(config_dict["frame_jump"], 2))
     config_dict["val_batch_size"] = int(5 * 50 / config_dict["sample_duration"] * min(config_dict["frame_jump"], 2))
