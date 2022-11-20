@@ -19,7 +19,6 @@ def fitness(x):
     config_dict["weight_decay"] = float(10 ** (-x[0]))
     config_dict["dropout_prob"] = float(x[1])
     config_dict["cover_ratio"] = float(x[2])
-    config_dict["sample_duration"] = int(x[3])
     config_dict["frame_jump"] = int(x[4])
 
     config_dict["train_batch_size"] = int(5 * 50 / config_dict["sample_duration"] * min(config_dict["frame_jump"], 2))
@@ -32,16 +31,14 @@ def fitness(x):
     return history.get_epoch_last_item((SubsetType.VAL, ModalityType.RGB, MetricType.LOSS))
 
 
-var_bounds = np.array([[3, 5],      # weight_decay (exp)
+var_bounds = np.array([[3, 6],      # weight_decay (exp)
                        [0, 0.5],    # dropout_prob
-                       [0.1, 1],    # cover_ratio
-                       [16, 84],    # sample_duration
+                       [0.1, 0.6],  # cover_ratio
                        [1, 4]])     # frame_jump
 
 var_types = np.array([['int'],
                       ['real'],
                       ['real'],
-                      ['int'],
                       ['int']])
 
 algorithm_param = {'max_num_iteration': None,
