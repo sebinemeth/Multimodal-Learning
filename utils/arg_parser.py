@@ -79,13 +79,14 @@ def get_config_dict():
     opt.add_argument("--train_batch_size", default=None, type=str2int, help="batch size during training")
     opt.add_argument("--val_batch_size", default=None, type=str2int, help="batch size during validation")
 
-    # Other parameters
+    # Data parameters
     opt.add_argument("--img_x", default=None, type=str2int, help="")
     opt.add_argument("--img_y", default=None, type=str2int, help="")
     opt.add_argument("--depth_x", default=None, type=str2int, help="")
     opt.add_argument("--depth_y", default=None, type=str2int, help="")
     opt.add_argument("--sample_duration", default=None, type=str2int, help="")
     opt.add_argument("--frame_jump", default=None, type=str2int, help="")
+    opt.add_argument("--cover_ratio", default=None, type=str2float, help="")
 
     # Paths for training
     opt.add_argument("--dataset_path", default=None, type=str2str, help="path to dataset folder")
