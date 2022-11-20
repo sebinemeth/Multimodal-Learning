@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from glob import glob
 from statistics import mean
+from typing import Tuple, List, Dict
 
 from utils.log_maker import write_log
 from utils_datasets.nv_gesture.nv_utils import SubsetType
@@ -30,7 +31,7 @@ def print_stat(data_stat_dict: dict, num_of_all_samples: int):
     write_log("dataloader", "\n".join(log_lines), title="Data statistics", print_out=True, color="blue")
 
 
-def get_annot_and_video_paths(annotation_file_path, root_path):
+def get_annot_and_video_paths(annotation_file_path: str, root_path: str) -> Tuple[List[str], List[Dict]]:
     """
     one line:
     path:./Video_data/class_01/subject13_r0 ...
@@ -114,7 +115,6 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
         data_stat_dict[label]["len_of_gesture"].append(min(end_t, max_frame_idx) - begin_t)
 
         if config_dict["only_with_gesture"]:
-            # TODO: end_t + 1 does not work
             for last_frame_idx in range(min(end_t, max_frame_idx), begin_t, -1):
                 frame_indices = sorted([last_frame_idx - i for i in range(sample_duration)])
                 assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)

@@ -137,7 +137,7 @@ class CallbackRunner(object):
 
     def on_batch_end(self, batch_idx: int):
         for callback in self.callbacks:
-            callback.on_epoch_end(batch_idx)
+            callback.on_batch_end(batch_idx)
 
     def on_epoch_end(self, epoch: int):
         for callback in self.callbacks:
