@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from typing import Tuple
 
 from PIL import Image
 
@@ -9,7 +10,7 @@ from utils_datasets.nv_gesture.nv_utils import ModalityType
 print_out = False
 
 
-def pil_loader(path, modality):
+def pil_loader(path: str, modality: ModalityType):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         with Image.open(f) as img:
@@ -20,7 +21,8 @@ def pil_loader(path, modality):
                 return img.convert('L')
 
 
-def image_list_loader(video_dir_path, frame_indices, modality, img_size, frame_idx_offset=0):
+def image_list_loader(video_dir_path: str, frame_indices: list, modality: ModalityType, img_size: Tuple[int, int],
+                      frame_idx_offset: int = 0):
     video_dir_path = os.path.join(video_dir_path, "sk_color_all")
 
     rgb_image_list = list()

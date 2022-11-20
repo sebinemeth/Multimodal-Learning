@@ -27,7 +27,6 @@ class NV(data.Dataset):
         self.spatial_transform = spatial_transform
         self.temporal_transform = temporal_transform
         self.modality = modality
-        self.sample_duration = config_dict["sample_duration"]
         self.img_size = config_dict["img_x"], config_dict["img_y"]
 
     def __getitem__(self, index):
@@ -39,7 +38,6 @@ class NV(data.Dataset):
         """
 
         path = self.data_info_list[index]['video_folder']
-
         frame_indices = self.data_info_list[index]['frame_indices']
         rgb_images, depth_images = image_list_loader(path, frame_indices, self.modality, self.img_size)
 
@@ -51,11 +49,11 @@ class NV(data.Dataset):
                 depth_images = [self.spatial_transform(depth_image) for depth_image in depth_images]
 
         if len(rgb_images) > 0:
-            rgb_images = torch.stack(rgb_images, dim=1)  # shape: (batch size, chanel, duration, width, height)
+            rgb_images = torch.stack(rgb_images, dim=1)  # shape: (chanel, duration, width, height)
         if len(depth_images) > 0:
-            depth_images = torch.stack(depth_images, dim=1)  # shape: (batch size, chanel, duration, width, height)
+            depth_images = torch.stack(depth_images, dim=1)  # shape: (chanel, duration, width, height)
 
-        target = self.data_info_list[index]["label"]  # shape: (batch size)
+        target = self.data_info_list[index]["label"]  # shape: (1)
         return rgb_images, depth_images, target
 
     def __len__(self):

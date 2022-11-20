@@ -38,7 +38,6 @@ def main() -> History:
     print_to_discord(discord, config_dict)
 
     train_loader, valid_loader = get_loaders(config_dict, ModalityType.RGB)
-    exit()
     rgb_cnn, rgb_optimizer = get_models(config_dict, only_rgb=True)
 
     if config_dict["print_summary"]:
