@@ -15,8 +15,8 @@ def print_stat(data_stat_dict: dict, num_of_all_samples: int):
 
         num_of_zeros = data_stat_dict[label]["num_of_zeros"]
         zero_percentage = num_of_zeros / data_stat_dict[label]["num_of_frames"] * 100
-        line = "label: {}, no. samples: {} ({:.2}%), no. zeros: {} ({:.1}%)".format(label, num_of_samples, percentage,
-                                                                                    num_of_zeros, zero_percentage)
+        line = "label: {}, no. samples: {} ({:.2f}%), no. zeros: {} ({:.1f}%)".format(label, num_of_samples, percentage,
+                                                                                      num_of_zeros, zero_percentage)
         log_lines.append(line)
 
     write_log("dataloader", "\n".join(log_lines), title="Data statistics", print_out=True, color="blue")
