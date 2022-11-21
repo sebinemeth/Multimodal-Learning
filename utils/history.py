@@ -7,15 +7,18 @@ from utils.discord import DiscordBot
 
 
 class History(object):
-    def __init__(self, config_dict: dict, epoch_keys: List[Tuple[SubsetType, ModalityType, MetricType]],
-                 batch_keys: List[Tuple[SubsetType, ModalityType, MetricType]], discord: DiscordBot = None):
+    def __init__(self, config_dict: dict,
+                 epoch_keys: List[Tuple[SubsetType, ModalityType, MetricType]],
+                 batch_keys: List[Tuple[SubsetType, ModalityType, MetricType]],
+                 discord: DiscordBot = None):
         self.config_dict = config_dict
+        self.discord = discord
+
         self.epoch_keys = epoch_keys
         self.epoch_history_dict = {key: list() for key in epoch_keys}
+
         self.batch_keys = batch_keys
         self.batch_history_dict = {key: list() for key in batch_keys}
-
-        self.discord = discord
 
     def add_epoch_items(self, items_dict: dict, reset_batch=False):
         for k, v in items_dict.items():
@@ -33,6 +36,13 @@ class History(object):
     def get_epoch_last_item(self, key: Tuple[SubsetType, ModalityType, MetricType]) -> float:
         assert len(self.epoch_history_dict[key]) > 0, "list in history with key {} is empty".format(key)
         return self.epoch_history_dict[key][-1]
+
+    def get_epoch_best_item(self, key: Tuple[SubsetType, ModalityType, MetricType]) -> float:
+        if key[2] == MetricType.LOSS:
+            best_value = min(self.epoch_history_dict[key])
+        else:
+            best_value = max(self.epoch_history_dict[key])
+        return best_value
 
     def get_batch_mean(self, key: Tuple[SubsetType, ModalityType, MetricType]) -> float:
         assert len(self.batch_history_dict[key]) > 0, "list in history with key {} is empty".format(key)

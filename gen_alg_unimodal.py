@@ -28,7 +28,7 @@ def fitness(x):
         yaml.dump(config_dict, outfile, default_flow_style=False)
 
     history = main()
-    return history.get_epoch_last_item((SubsetType.VAL, ModalityType.RGB, MetricType.LOSS))
+    return history.get_epoch_best_item((SubsetType.VAL, ModalityType.RGB, MetricType.LOSS))
 
 
 var_bounds = np.array([[3, 6],      # weight_decay (exp)
