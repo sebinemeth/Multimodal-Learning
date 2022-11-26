@@ -25,7 +25,7 @@ def image_list_loader(video_dir_path: str,
                       frame_indices,  #: list,
                       modalities,  #: List[ModalityType],
                       img_size: Tuple[int, int],
-                      frame_idx_offset: int = 0) -> Dict[ModalityType: list]:
+                      frame_idx_offset: int = 0):  # -> Dict[ModalityType: list]:
 
     video_dir_path = os.path.join(video_dir_path, "sk_color_all")
     image_list_dict = dict()
