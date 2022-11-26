@@ -59,12 +59,14 @@ def get_history(config_dict: dict, discord: DiscordBot) -> History:
 
 
 def get_callback_runner(model_dict: Dict[ModalityType, Module], history: History, config_dict: dict) -> CallbackRunner:
-    callback_list = [EarlyStopping(history=history,
-                                   config_dict=config_dict,
-                                   key=(SubsetType.VAL,
-                                        ModalityType.RGB_DEPTH,
-                                        MetricType.LOSS),
-                                   patience=4, delta=0.02)]
+    callback_list = [EarlyStopping(
+        history=history,
+        config_dict=config_dict,
+        key=(SubsetType.VAL,
+             config_dict["modalities"][0] if len(config_dict["modalities"]) == 1 else ModalityType.RGB_DEPTH,
+             MetricType.LOSS),
+        patience=4,
+        delta=0.02)]
 
     for modality in config_dict["modalities"]:
         callback_list.append([SaveModel(history=history,
@@ -139,8 +141,3 @@ def main() -> History:
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
