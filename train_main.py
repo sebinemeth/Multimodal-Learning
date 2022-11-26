@@ -81,10 +81,6 @@ def get_callback_runner(model_dict: Dict[ModalityType, Module], history: History
     return CallbackRunner(callbacks=callback_list)
 
 
-if __name__ == "__main__":
-    main()
-
-
 def main() -> History:
     start_log_maker()
     config_dict = get_config_dict()
@@ -139,3 +135,12 @@ def main() -> History:
         callback_runner.on_training_end()
 
     return history
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
