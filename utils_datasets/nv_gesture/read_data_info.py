@@ -130,7 +130,7 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict):
 
                 sample = {
                     'video_folder': video_folder,
-                    'frame_indices': frame_indices,
+                    'frame_indices': list(frame_indices),
                     'label': label
                 }
 
