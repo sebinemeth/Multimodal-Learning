@@ -125,7 +125,7 @@ class TrainLoop(object):
                 self.callback_runner.on_batch_end(batch_idx)
 
             # epoch end
-            #plot_confusion_matrix(y_train, predictions_dict, epoch, SubsetType.TRAIN, self.config_dict)
+            plot_confusion_matrix(y_train, predictions_dict, epoch, SubsetType.TRAIN, self.config_dict)
             validation_step(model_dict=self.model_dict, criterion=self.criterion, epoch=epoch,
                             valid_loader=self.valid_loader, config_dict=self.config_dict, history=self.history)
 

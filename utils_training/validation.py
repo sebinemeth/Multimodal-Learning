@@ -60,7 +60,7 @@ def validation_step(model_dict: Dict[ModalityType, Module],
             else:
                 history.add_epoch_items({key: tqdm_dict[key]})
 
-        #plot_confusion_matrix(y_test, predictions_dict, epoch, SubsetType.VAL, config_dict)
+        plot_confusion_matrix(y_test, predictions_dict, epoch, SubsetType.VAL, config_dict)
 
 
 # def validation_step_old(model_rgb: nn.Module, model_depth: nn.Module, criterion, valid_loader, epoch, config_dict):

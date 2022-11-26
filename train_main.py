@@ -117,6 +117,7 @@ def main() -> History:
     criterion = torch.nn.CrossEntropyLoss()
     history = get_history(config_dict, discord)
     callback_runner = get_callback_runner(model_dict, history, config_dict)
+    breakpoint()
 
     train_loop = TrainLoop(config_dict,
                            model_dict,
