@@ -29,5 +29,5 @@ def convert_to_tqdm_dict(input_dict: dict):
         if key[2] == MetricType.LOSS:
             result_dict[keys_to_str(key)] = "{:.2f}".format(item)
         else:
-            result_dict[keys_to_str(key)] = "{:.1f%}".format(item * 100)
+            result_dict[keys_to_str(key)] = "{:.1f}%".format(item * 100)
     return result_dict
