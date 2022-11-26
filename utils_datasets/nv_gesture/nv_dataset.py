@@ -39,6 +39,10 @@ class NV(data.Dataset):
 
         path = self.data_info_list[index]['video_folder']
         frame_indices = self.data_info_list[index]['frame_indices']
+        print(type(path))
+        print(type(frame_indices))
+        print(type(self.modalities))
+        print(type(self.img_size))
         image_list_dict = image_list_loader(path, frame_indices, self.modalities, self.img_size)
 
         if self.spatial_transform is not None:
