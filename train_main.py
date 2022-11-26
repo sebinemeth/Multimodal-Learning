@@ -9,7 +9,7 @@ from utils.log_maker import start_log_maker, write_log
 from utils.arg_parser import get_config_dict, print_to_discord
 from utils.discord import DiscordBot
 from utils_training.get_loaders import get_loaders
-from utils_training.unimodal_train_loop import UniModalTrainLoop
+from utils_training.train_loop import TrainLoop
 from utils_training.get_models import get_models
 from utils.history import History
 from utils.callbacks import Tensorboard, SaveModel, EarlyStopping, CallbackRunner, EarlyStopException
@@ -81,6 +81,10 @@ def get_callback_runner(model_dict: Dict[ModalityType, Module], history: History
     return CallbackRunner(callbacks=callback_list)
 
 
+if __name__ == "__main__":
+    main()
+
+
 def main() -> History:
     start_log_maker()
     config_dict = get_config_dict()
@@ -109,18 +113,18 @@ def main() -> History:
             summary(model, input_size=(chanel_size, 32, 224, 224))  # (chanel, duration, width, height)
 
     criterion = torch.nn.CrossEntropyLoss()
-
     history = get_history(config_dict, discord)
+    callback_runner = get_callback_runner(model_dict, history, config_dict)
 
-    train_loop = UniModalTrainLoop(config_dict,
-                                   model_dict,
-                                   optimizer_dict,
-                                   criterion,
-                                   train_loader,
-                                   valid_loader,
-                                   history,
-                                   callback_runner,
-                                   discord)
+    train_loop = TrainLoop(config_dict,
+                           model_dict,
+                           optimizer_dict,
+                           criterion,
+                           train_loader,
+                           valid_loader,
+                           history,
+                           callback_runner,
+                           discord)
 
     try:
         train_loop.run_loop()
@@ -135,7 +139,3 @@ def main() -> History:
         callback_runner.on_training_end()
 
     return history
-
-
-if __name__ == "__main__":
-    main()

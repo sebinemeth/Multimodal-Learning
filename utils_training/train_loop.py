@@ -14,7 +14,7 @@ from utils.discord import DiscordBot
 from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType
 
 
-class UniModalTrainLoop(object):
+class TrainLoop(object):
     def __init__(self,
                  config_dict: dict,
                  model_dict: Dict[ModalityType, Module],
