@@ -29,7 +29,7 @@ class NV(data.Dataset):
         self.modalities = config_dict["modalities"]
         self.img_size = config_dict["img_x"], config_dict["img_y"]
 
-    def __getitem__(self, index: int) -> Tuple[Dict[ModalityType: torch.Tensor], torch.Tensor]:
+    def __getitem__(self, index: int) -> Tuple[Dict[ModalityType, torch.Tensor], torch.Tensor]:
         """
         Args:
             index (int): Index
