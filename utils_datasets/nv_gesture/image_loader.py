@@ -23,7 +23,7 @@ def pil_loader(path: str, modality: ModalityType):
 
 def image_list_loader(video_dir_path: str,
                       frame_indices: list,
-                      modalities: List[ModalityType],
+                      modalities,  #: List[ModalityType],
                       img_size: Tuple[int, int],
                       frame_idx_offset: int = 0) -> Dict[ModalityType: list]:
 
