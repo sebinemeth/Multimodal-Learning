@@ -56,8 +56,8 @@ def get_history(config_dict: dict, discord: DiscordBot) -> History:
                                (SubsetType.TRAIN, ModalityType.RGB_DEPTH, MetricType.ACC)])
 
     history = History(config_dict=config_dict,
-                      epoch_keys=epoch_keys,
-                      batch_keys=batch_keys,
+                      epoch_keys=[],
+                      batch_keys=[],
                       discord=discord)
     return history
 
@@ -84,7 +84,7 @@ def get_callback_runner(model_dict: Dict[ModalityType, Module], history: History
                                                           (SubsetType.TRAIN, modality, MetricType.ACC)],
                                           epoch_end_keys=[(SubsetType.VAL, modality, MetricType.LOSS),
                                                           (SubsetType.VAL, modality, MetricType.ACC)])])
-    return CallbackRunner(callbacks=callback_list)
+    return CallbackRunner(callbacks=[])
 
 
 def main() -> History:
