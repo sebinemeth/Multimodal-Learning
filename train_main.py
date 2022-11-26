@@ -69,7 +69,7 @@ def get_callback_runner(model_dict: Dict[ModalityType, Module], history: History
         delta=0.02)]
 
     for modality in config_dict["modalities"]:
-        callback_list.append([SaveModel(history=history,
+        callback_list.extend([SaveModel(history=history,
                                         model=model_dict[modality],
                                         modality=modality,
                                         config_dict=config_dict,
