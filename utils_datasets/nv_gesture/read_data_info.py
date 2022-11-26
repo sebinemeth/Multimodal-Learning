@@ -31,7 +31,7 @@ def print_stat(data_stat_dict: dict, num_of_all_samples: int):
     write_log("dataloader", "\n".join(log_lines), title="Data statistics", print_out=True, color="blue")
 
 
-def get_annot_and_video_paths(annotation_file_path: str, root_path: str) -> Tuple[List[str], List[Dict]]:
+def get_annot_and_video_paths(annotation_file_path: str, root_path: str) -> Tuple[List[str], List[dict]]:
     """
     one line:
     path:./Video_data/class_01/subject13_r0 ...

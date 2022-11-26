@@ -17,8 +17,8 @@ from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricT
 class UniModalTrainLoop(object):
     def __init__(self,
                  config_dict: dict,
-                 model_dict: Dict[ModalityType: Module],
-                 optimizer_dict: Dict[ModalityType: Optimizer],
+                 model_dict: Dict[ModalityType, Module],
+                 optimizer_dict: Dict[ModalityType, Optimizer],
                  criterion: Module,
                  train_loader: DataLoader,
                  valid_loader: DataLoader,

@@ -10,7 +10,7 @@ from utils.history import History
 from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType, convert_to_tqdm_dict
 
 
-def validation_step(model_dict: Dict[ModalityType: Module],
+def validation_step(model_dict: Dict[ModalityType, Module],
                     criterion: Module,
                     epoch: int,
                     valid_loader: DataLoader,

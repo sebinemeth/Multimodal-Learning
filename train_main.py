@@ -58,7 +58,7 @@ def get_history(config_dict: dict, discord: DiscordBot) -> History:
     return history
 
 
-def get_callback_runner(model_dict: Dict[ModalityType: Module], history: History, config_dict: dict) -> CallbackRunner:
+def get_callback_runner(model_dict: Dict[ModalityType, Module], history: History, config_dict: dict) -> CallbackRunner:
     callback_list = [EarlyStopping(history=history,
                                    config_dict=config_dict,
                                    key=(SubsetType.VAL,

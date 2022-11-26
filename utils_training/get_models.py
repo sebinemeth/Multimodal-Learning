@@ -11,7 +11,7 @@ path_map_dict = {ModalityType.RGB: "rgb_ckp_model_path",
                  ModalityType.DEPTH: "depth_ckp_model_path"}
 
 
-def get_models(config_dict) -> Tuple[Dict[ModalityType: Module], Dict[ModalityType: Optimizer]]:
+def get_models(config_dict) -> Tuple[Dict[ModalityType, Module], Dict[ModalityType, Optimizer]]:
     model_dict = dict()
     optimizer_dict = dict()
     for modality in config_dict["modalities"]:
