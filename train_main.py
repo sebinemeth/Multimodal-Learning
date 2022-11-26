@@ -1,8 +1,8 @@
 import os
 import torch
 from torch.nn import Module
-import traceback
 from torchsummary import summary
+import traceback
 from typing import Dict
 
 from utils.log_maker import start_log_maker, write_log

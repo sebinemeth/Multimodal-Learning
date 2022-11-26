@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 from typing import Dict
 
 from utils.log_maker import write_log
-from utils_datasets.nv_gesture.nv_utils import SubsetType
+from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType
 
 
 def plot_confusion_matrix(_y_test: list,
-                          predictions_dict: Dict[list],
+                          predictions_dict: Dict[ModalityType, list],
                           epoch: int,
                           subset_type: SubsetType,
                           config_dict: dict):

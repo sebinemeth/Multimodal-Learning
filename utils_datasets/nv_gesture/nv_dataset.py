@@ -58,29 +58,4 @@ class NV(data.Dataset):
         return len(self.data_info_list)
 
 
-if __name__ == "__main__":
-    _video_path = "../nvGesture"
-    _train_annotation_path = "../nvGesture/nvgesture_train_correct_cvpr2016_v2.lst"
-    _subset = "train"
 
-    training_data = NV(
-        _video_path,
-        _train_annotation_path,
-        _subset,
-        # spatial_transform=spatial_transform,
-        # temporal_transform=temporal_transform,
-        # target_transform=target_transform,
-        # sample_duration=sample_duration,
-        modality="RGB-D")
-
-    train_loader = torch.utils.data.DataLoader(
-        training_data,
-        batch_size=100,
-        shuffle=True,
-        num_workers=2,
-        pin_memory=True)
-
-    for k, (inputs, targets) in enumerate(train_loader):
-        print(inputs)
-        print(targets)
-        input()

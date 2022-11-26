@@ -1,6 +1,7 @@
 import os
 import numpy as np
-from typing import Tuple, List, Dict
+import torch
+from typing import Tuple, List, Dict, Union
 
 from PIL import Image
 
@@ -22,10 +23,10 @@ def pil_loader(path: str, modality: ModalityType):
 
 
 def image_list_loader(video_dir_path: str,
-                      frame_indices,  #: list,
-                      modalities,  #: List[ModalityType],
+                      frame_indices: list,
+                      modalities: List[ModalityType],
                       img_size: Tuple[int, int],
-                      frame_idx_offset: int = 0):  # -> Dict[ModalityType: list]:
+                      frame_idx_offset: int = 0) -> Dict[ModalityType, Union[list, torch.Tensor]]:
 
     video_dir_path = os.path.join(video_dir_path, "sk_color_all")
     image_list_dict = dict()
