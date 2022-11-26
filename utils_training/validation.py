@@ -54,11 +54,11 @@ def validation_step(model_dict: Dict[ModalityType, Module],
             tq.update(1)
             tq.set_postfix(**convert_to_tqdm_dict(tqdm_dict))
 
-        for key in tqdm_dict.keys():
-            if key[2] == MetricType.LOSS:
-                history.add_epoch_items({key: mean(loss_dict[key[1]])})
-            else:
-                history.add_epoch_items({key: tqdm_dict[key]})
+        # for key in tqdm_dict.keys():
+        #     if key[2] == MetricType.LOSS:
+        #         history.add_epoch_items({key: mean(loss_dict[key[1]])})
+        #     else:
+        #         history.add_epoch_items({key: tqdm_dict[key]})
 
         plot_confusion_matrix(y_test, predictions_dict, epoch, SubsetType.VAL, config_dict)
 

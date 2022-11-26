@@ -98,9 +98,9 @@ class TrainLoop(object):
                         # total loss
                         reg_loss = loss_dict[modality] + ssa_loss
                         reg_loss.backward(retain_graph=modality == ModalityType.RGB)
-                        self.history.add_batch_items({(SubsetType.TRAIN,
-                                                       ModalityType.RGB_DEPTH,
-                                                       MetricType.LOSS): ssa_loss.item()})
+                        # self.history.add_batch_items({(SubsetType.TRAIN,
+                        #                                ModalityType.RGB_DEPTH,
+                        #                                MetricType.LOSS): ssa_loss.item()})
                 else:
                     # uni-modal case
                     for modality in self.modalities:
@@ -113,12 +113,12 @@ class TrainLoop(object):
                     predictions_dict[modality].append(predicted.cpu().numpy())
                     acc = correct_dict[modality] / total
 
-                    self.history.add_batch_items({(SubsetType.TRAIN,
-                                                   modality,
-                                                   MetricType.LOSS): loss_dict[modality].item(),
-                                                  (SubsetType.TRAIN,
-                                                   modality,
-                                                   MetricType.ACC): acc})
+                    # self.history.add_batch_items({(SubsetType.TRAIN,
+                    #                                modality,
+                    #                                MetricType.LOSS): loss_dict[modality].item(),
+                    #                               (SubsetType.TRAIN,
+                    #                                modality,
+                    #                                MetricType.ACC): acc})
 
                 tq.update(1)
                 tq.set_postfix(**self.history.get_batch_tqdm_dict())
@@ -129,15 +129,15 @@ class TrainLoop(object):
             validation_step(model_dict=self.model_dict, criterion=self.criterion, epoch=epoch,
                             valid_loader=self.valid_loader, config_dict=self.config_dict, history=self.history)
 
-            epoch_end_dict = dict()
-            for key in self.history.epoch_keys:
-                if key[2] == MetricType.LOSS:
-                    epoch_end_dict[key] = self.history.get_batch_mean(key)
-                else:
-                    epoch_end_dict[key] = self.history.get_batch_last(key)
-
-            self.history.add_epoch_items(epoch_end_dict, reset_batch=True)
-            self.history.print_epoch_values(epoch)
+            # epoch_end_dict = dict()
+            # for key in self.history.epoch_keys:
+            #     if key[2] == MetricType.LOSS:
+            #         epoch_end_dict[key] = self.history.get_batch_mean(key)
+            #     else:
+            #         epoch_end_dict[key] = self.history.get_batch_last(key)
+            #
+            # self.history.add_epoch_items(epoch_end_dict, reset_batch=True)
+            # self.history.print_epoch_values(epoch)
             self.callback_runner.on_epoch_end(epoch)
 
     @staticmethod
