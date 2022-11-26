@@ -1,5 +1,6 @@
 import torch
 import torch.utils.data as data
+from typing import Tuple, Dict
 
 from utils_datasets.nv_gesture.read_data_info import get_data_info_list
 from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType
@@ -17,7 +18,6 @@ class NV(data.Dataset):
 
     def __init__(self,
                  subset_type: SubsetType,
-                 modality: ModalityType,
                  config_dict: dict,
                  spatial_transform=None,
                  temporal_transform=None):
@@ -26,10 +26,10 @@ class NV(data.Dataset):
 
         self.spatial_transform = spatial_transform
         self.temporal_transform = temporal_transform
-        self.modality = modality
+        self.modalities = config_dict["modalities"]
         self.img_size = config_dict["img_x"], config_dict["img_y"]
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Tuple[Dict[ModalityType: torch.Tensor], torch.Tensor]:
         """
         Args:
             index (int): Index
@@ -39,24 +39,22 @@ class NV(data.Dataset):
 
         path = self.data_info_list[index]['video_folder']
         frame_indices = self.data_info_list[index]['frame_indices']
-        rgb_images, depth_images = image_list_loader(path, frame_indices, self.modality, self.img_size)
+        image_list_dict = image_list_loader(path, frame_indices, self.modalities, self.img_size)
 
         if self.spatial_transform is not None:
             self.spatial_transform.randomize_parameters()
-            if len(rgb_images) > 0:
-                rgb_images = [self.spatial_transform(rgb_image) for rgb_image in rgb_images]
-            if len(depth_images) > 0:
-                depth_images = [self.spatial_transform(depth_image) for depth_image in depth_images]
+            for modality in image_list_dict.keys():
+                image_list_dict[modality] = [self.spatial_transform(image) for image in image_list_dict[modality]]
 
-        if len(rgb_images) > 0:
-            rgb_images = torch.stack(rgb_images, dim=1)  # shape: (chanel, duration, width, height)
-        if len(depth_images) > 0:
-            depth_images = torch.stack(depth_images, dim=1)  # shape: (chanel, duration, width, height)
+        for modality in image_list_dict.keys():
+            # shape: (chanel, duration, width, height)
+            image_list_dict[modality] = torch.stack(image_list_dict[modality], dim=1)
 
-        target = self.data_info_list[index]["label"]  # shape: (1)
-        return rgb_images, depth_images, target
+        # shape: (1)
+        target = self.data_info_list[index]["label"]
+        return image_list_dict, target
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.data_info_list)
 
 

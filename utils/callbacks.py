@@ -25,7 +25,12 @@ class Callback(ABC):
 
 
 class EarlyStopping(Callback):
-    def __init__(self, history: History, key: Tuple[SubsetType, ModalityType, MetricType], patience: int, delta: float):
+    def __init__(self,
+                 history: History,
+                 config_dict: dict,
+                 key: Tuple[SubsetType, ModalityType, MetricType],
+                 patience: int,
+                 delta: float):
         """
         Parameters
         ----------
@@ -36,11 +41,16 @@ class EarlyStopping(Callback):
         """
         self.history = history
         self.key = key
+        self.modalities = config_dict["modalities"]
+
+        if self.key[1] == ModalityType.RGB_DEPTH:
+            assert len(self.modalities) == 2
+
         self.patience = patience
         assert delta >= 0, "in EarlyStopping delta must be non-negative"
         self.delta = delta
         self.best_epoch = None
-        self.best_value = None
+        self.best_values = dict()
         self.stop = False
 
         if self.key[2] == MetricType.LOSS:
@@ -49,14 +59,15 @@ class EarlyStopping(Callback):
             self.multiplier = 1
 
     def on_epoch_end(self, epoch: int):
-        current_value = self.history.get_epoch_last_item(self.key)
+        for modality in self.modalities:
+            current_value = self.history.get_epoch_last_item((self.key[0], modality, self.key[2]))
 
-        if epoch == 0 or self.multiplier * (current_value - self.best_value) > self.delta:
-            self.best_epoch = epoch
-            self.best_value = current_value
-        else:
-            if epoch - self.best_epoch > self.patience:
-                raise EarlyStopException
+            if epoch == 0 or self.multiplier * (current_value - self.best_values[modality]) > self.delta:
+                self.best_epoch = epoch
+                self.best_values[modality] = current_value
+
+        if epoch - self.best_epoch > self.patience:
+            raise EarlyStopException
 
 
 class SaveModel(Callback):
@@ -94,7 +105,8 @@ class SaveModel(Callback):
 
 
 class Tensorboard(Callback):
-    def __init__(self, history: History,
+    def __init__(self,
+                 history: History,
                  config_dict: dict,
                  batch_end_keys: List[Tuple[SubsetType, ModalityType, MetricType]],
                  epoch_end_keys: List[Tuple[SubsetType, ModalityType, MetricType]]):

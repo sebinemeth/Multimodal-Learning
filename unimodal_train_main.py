@@ -37,8 +37,8 @@ def main() -> History:
     discord = DiscordBot()
     print_to_discord(discord, config_dict)
 
-    train_loader, valid_loader = get_loaders(config_dict, ModalityType.RGB)
-    rgb_cnn, rgb_optimizer = get_models(config_dict, only_rgb=True)
+    train_loader, valid_loader = get_loaders(config_dict)
+    rgb_cnn, rgb_optimizer = get_models(config_dict)
 
     if config_dict["print_summary"]:
         summary(rgb_cnn, input_size=(3, 32, 224, 224))  # (chanel, duration, width, height)

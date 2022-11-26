@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from typing import Tuple
+from typing import Tuple, List, Dict
 
 from PIL import Image
 
@@ -21,52 +21,33 @@ def pil_loader(path: str, modality: ModalityType):
                 return img.convert('L')
 
 
-def image_list_loader(video_dir_path: str, frame_indices: list, modality: ModalityType, img_size: Tuple[int, int],
-                      frame_idx_offset: int = 0):
+def image_list_loader(video_dir_path: str, frame_indices: list, modalities: List[ModalityType],
+                      img_size: Tuple[int, int], frame_idx_offset: int = 0) -> Dict[ModalityType: list]:
     video_dir_path = os.path.join(video_dir_path, "sk_color_all")
+    image_list_dict = dict()
 
-    rgb_image_list = list()
-    depth_image_list = list()
-    if modality == ModalityType.RGB:
-        for frame_idx in frame_indices:
-            image_path = os.path.join(video_dir_path, '{:05d}.jpg'.format(frame_idx + frame_idx_offset))
-            if os.path.exists(image_path):
-                rgb_image_list.append(pil_loader(image_path, modality))
-            else:
-                rgb_image_list.append(np.zeros((img_size[0], img_size[1], 3)))
-                write_log("dataloader", image_path, title="image is not found", print_out=print_out, color="red")
-
-    elif modality == ModalityType.DEPTH:
-        for frame_idx in frame_indices:
-            image_path = os.path.join(video_dir_path.replace('color', 'depth'),
-                                      '{:05d}.jpg'.format(frame_idx + frame_idx_offset))
-            if os.path.exists(image_path):
-                depth_image_list.append(pil_loader(image_path, modality))
-            else:
-                depth_image_list.append(np.zeros((img_size[0], img_size[1], 1)))
-                write_log("dataloader", image_path, title="image is not found", print_out=print_out, color="red")
-
-    elif modality == ModalityType.RGB_DEPTH:
-        for frame_idx in frame_indices:  # index 35 is used to change img to flow
-            if frame_idx < 0:
-                rgb_image_list.append(np.zeros((img_size[0], img_size[1], 3)))
-                depth_image_list.append(np.zeros((img_size[0], img_size[1], 1)))
-            else:
-                rgb_image_path = os.path.join(video_dir_path, '{:05d}.jpg'.format(frame_idx + frame_idx_offset))
-                if os.path.exists(rgb_image_path):
-                    rgb_image_list.append(pil_loader(rgb_image_path, ModalityType.RGB))
+    for modality in modalities:
+        image_list_dict[modality] = list()
+        if modality == ModalityType.RGB:
+            for frame_idx in frame_indices:
+                image_path = os.path.join(video_dir_path, '{:05d}.jpg'.format(frame_idx + frame_idx_offset))
+                if os.path.exists(image_path):
+                    image_list_dict[modality].append(pil_loader(image_path, modality))
                 else:
-                    rgb_image_list.append(np.zeros((img_size[0], img_size[1], 3)))
-                    write_log("dataloader", rgb_image_path, title="image is not found", print_out=print_out,
-                              color="red")
+                    image_list_dict[modality].append(np.zeros((img_size[0], img_size[1], 3)))
+                    write_log("dataloader", image_path, title="image is not found", print_out=print_out, color="red")
 
-                depth_image_path = os.path.join(video_dir_path.replace('color', 'depth'),
-                                                '{:05d}.jpg'.format(frame_idx + frame_idx_offset))
-                if os.path.exists(depth_image_path):
-                    depth_image_list.append(pil_loader(depth_image_path, ModalityType.DEPTH))
+        elif modality == ModalityType.DEPTH:
+            for frame_idx in frame_indices:
+                image_path = os.path.join(video_dir_path.replace('color', 'depth'),
+                                          '{:05d}.jpg'.format(frame_idx + frame_idx_offset))
+                if os.path.exists(image_path):
+                    image_list_dict[modality].append(pil_loader(image_path, modality))
                 else:
-                    depth_image_list.append(np.zeros((img_size[0], img_size[1], 1)))
-                    write_log("dataloader", depth_image_path, title="image is not found", print_out=print_out,
-                              color="red")
+                    image_list_dict[modality].append(np.zeros((img_size[0], img_size[1], 1)))
+                    write_log("dataloader", image_path, title="image is not found", print_out=print_out, color="red")
 
-    return rgb_image_list, depth_image_list
+        else:
+            raise ValueError("unknown modality: {}".format(modality))
+
+    return image_list_dict

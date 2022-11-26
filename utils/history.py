@@ -1,7 +1,7 @@
 from typing import List, Tuple
 from statistics import mean
 
-from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType, keys_to_str
+from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType, keys_to_str, convert_to_tqdm_dict
 from utils.log_maker import write_log
 from utils.discord import DiscordBot
 
@@ -71,8 +71,11 @@ class History(object):
             self.discord.send_message(fields=[{"name": name,
                                                "value": str(value),
                                                "inline": True} for name, value in name_value],
-                                      file_names=[self.config_dict["last_cm_path_rgb_train"],
-                                                  self.config_dict["last_cm_path_rgb_val"]])
+                                      file_names=self.config_dict["last_cm_paths"].values())
+
+    def get_batch_tqdm_dict(self):
+        return convert_to_tqdm_dict({key: item_list[-1] for key, item_list in self.batch_history_dict.items()})
+
 
 
 

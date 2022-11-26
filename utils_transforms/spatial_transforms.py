@@ -94,7 +94,7 @@ class ToTensor(object):
 
 
 class Normalize(object):
-    """Normalize an tensor image with mean and standard deviation.
+    """Normalize a tensor image with mean and standard deviation.
     Given mean: (R, G, B) and std: (R, G, B),
     will normalize each channel of the torch.*Tensor, i.e.
     channel = (channel - mean) / std
