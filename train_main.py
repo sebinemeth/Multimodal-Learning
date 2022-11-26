@@ -15,6 +15,10 @@ from utils.history import History
 from utils.callbacks import Tensorboard, SaveModel, EarlyStopping, CallbackRunner, EarlyStopException
 from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType
 
+import warnings
+# to supress pytorch nn.MaxPool3d warning
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 def write_end_log(discord: DiscordBot, text: str, title: str):
     discord.send_message(fields=[{"name": title, "value": text, "inline": True}])

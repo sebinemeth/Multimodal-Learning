@@ -11,7 +11,7 @@ class SubsetType(Enum):
 class ModalityType(Enum):
     RGB = 1
     DEPTH = 2
-    RGB_DEPTH = 3  # for regularization loss
+    RGB_DEPTH = 3  # for multi-modal items
 
 
 class MetricType(Enum):

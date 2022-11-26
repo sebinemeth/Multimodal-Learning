@@ -62,7 +62,7 @@ def str2str(v):
         return str(v)
 
 
-def get_config_dict():
+def get_config_dict() -> dict:
     parser = argparse.ArgumentParser()
     opt = parser.add_argument_group("optional arguments")
 
@@ -145,7 +145,7 @@ def get_config_dict():
     return config_dict
 
 
-def refresh_config(original_config):
+def refresh_config(original_config: dict) -> dict:
     with open(original_config["config_yaml"], 'r') as yaml_file:
         new_config_dict = yaml.safe_load(yaml_file)
 
