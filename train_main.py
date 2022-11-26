@@ -45,7 +45,7 @@ def get_history(config_dict: dict, discord: DiscordBot) -> History:
         batch_keys.extend([(SubsetType.TRAIN, modality, MetricType.LOSS),
                            (SubsetType.TRAIN, modality, MetricType.ACC)])
 
-        if config_dict["modalities"] > 1:
+        if len(config_dict["modalities"]) > 1:
             epoch_keys.extend([(SubsetType.TRAIN, ModalityType.RGB_DEPTH, MetricType.LOSS),
                                (SubsetType.TRAIN, ModalityType.RGB_DEPTH, MetricType.ACC)])
             batch_keys.extend([(SubsetType.TRAIN, ModalityType.RGB_DEPTH, MetricType.LOSS),
