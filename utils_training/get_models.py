@@ -41,7 +41,7 @@ def get_models(config_dict) -> Tuple[Dict[ModalityType, Module], Dict[ModalityTy
                           title="load model", print_out=True, color="green")
 
         model_dict[modality] = model
-        optimizer_dict[modality] = optimizer_dict
+        optimizer_dict[modality] = optimizer
 
     return model_dict, optimizer_dict
 
