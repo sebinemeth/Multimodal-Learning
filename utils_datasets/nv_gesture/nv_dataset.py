@@ -34,7 +34,7 @@ class NV(data.Dataset):
         Args:
             index (int): Index
         Returns:
-            tuple: (image, target) where target is class_index of the target class.
+            tuple: (image_dict, target) where target is class_index of the target class.
         """
 
         path = self.data_info_list[index]['video_folder']
