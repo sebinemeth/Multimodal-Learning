@@ -2,14 +2,14 @@ import os
 import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
-from typing import Dict
+from typing import Dict, List
 
 from utils.log_maker import write_log
 from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType
 
 
-def plot_confusion_matrix(_y_test: list,
-                          predictions_dict: Dict[ModalityType, list],
+def plot_confusion_matrix(_y_test: List[np.ndarray],
+                          predictions_dict: Dict[ModalityType, List[np.ndarray]],
                           epoch: int,
                           subset_type: SubsetType,
                           config_dict: dict):

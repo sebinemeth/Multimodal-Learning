@@ -50,6 +50,10 @@ class TrainLoop(object):
             y_train = list()
             total = 0
 
+            validation_step(model_dict=self.model_dict, criterion=self.criterion, epoch=epoch,
+                            valid_loader=self.valid_loader, config_dict=self.config_dict, history=self.history)
+            exit()
+
             tq = tqdm(total=(len(self.train_loader)))
             tq.set_description('ep {}'.format(epoch))
             for batch_idx, (data_dict, y) in enumerate(self.train_loader):

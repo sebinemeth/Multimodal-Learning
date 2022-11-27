@@ -18,7 +18,7 @@ depth_x: 224
 depth_y: 224
 
 # dataset parameters
-sample_duration: 64 # 64
+sample_duration: 64  # 64
 frame_jump: 1
 cover_ratio: 0.5
 only_with_gesture: True
