@@ -129,14 +129,7 @@ class TrainLoop(object):
             validation_step(model_dict=self.model_dict, criterion=self.criterion, epoch=epoch,
                             valid_loader=self.valid_loader, config_dict=self.config_dict, history=self.history)
 
-            epoch_end_dict = dict()
-            for key in self.history.epoch_keys:
-                if key[2] == MetricType.LOSS:
-                    epoch_end_dict[key] = self.history.get_batch_mean(key)
-                else:
-                    epoch_end_dict[key] = self.history.get_batch_last(key)
-
-            self.history.add_epoch_items(epoch_end_dict, reset_batch=True)
+            self.history.end_of_epoch_train(reset_batch=True)
             self.history.print_epoch_values(epoch)
             self.callback_runner.on_epoch_end(epoch)
 
