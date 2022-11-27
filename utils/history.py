@@ -38,29 +38,29 @@ class History(object):
         return self.epoch_history_dict[key][-1]
 
     def get_epoch_best_item(self, key: Tuple[SubsetType, ModalityType, MetricType]) -> float:
-        if key[2] == MetricType.LOSS:
-            best_value = min(self.epoch_history_dict[key])
-        else:
+        if key[2] == MetricType.ACC:
             best_value = max(self.epoch_history_dict[key])
+        else:
+            best_value = min(self.epoch_history_dict[key])
         return best_value
 
     def end_of_epoch_train(self, reset_batch: bool = False):
         epoch_end_dict = dict()
         for key in self.epoch_keys:
             if key[0] == SubsetType.TRAIN:
-                if key[2] == MetricType.LOSS:
-                    epoch_end_dict[key] = self.get_batch_mean(key)
-                else:
+                if key[2] == MetricType.ACC:
                     epoch_end_dict[key] = self.get_batch_last(key)
+                else:
+                    epoch_end_dict[key] = self.get_batch_mean(key)
 
         self.add_epoch_items(epoch_end_dict, reset_batch=reset_batch)
 
     def end_of_epoch_val(self, input_dict: dict, loss_dict: dict):
         for key in input_dict.keys():
-            if key[2] == MetricType.LOSS:
-                self.add_epoch_items({key: mean(loss_dict[key[1]])})
-            else:
+            if key[2] == MetricType.ACC:
                 self.add_epoch_items({key: input_dict[key]})
+            else:
+                self.add_epoch_items({key: mean(loss_dict[key[1]])})
 
     def get_batch_mean(self, key: Tuple[SubsetType, ModalityType, MetricType]) -> float:
         assert len(self.batch_history_dict[key]) > 0, "list in history with key {} is empty".format(key)
@@ -71,10 +71,10 @@ class History(object):
         return self.batch_history_dict[key][-1]
 
     def is_epoch_best_last(self, key: Tuple[SubsetType, ModalityType, MetricType]) -> bool:
-        if key[2] == MetricType.LOSS:
-            value = min(self.epoch_history_dict[key])
-        else:
+        if key[2] == MetricType.ACC:
             value = max(self.epoch_history_dict[key])
+        else:
+            value = min(self.epoch_history_dict[key])
         return self.epoch_history_dict[key].index(value) == (len(self.epoch_history_dict[key]) - 1)
 
     def print_epoch_values(self, epoch: int):

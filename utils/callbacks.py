@@ -53,10 +53,10 @@ class EarlyStopping(Callback):
         self.best_values = dict()
         self.stop = False
 
-        if self.key[2] == MetricType.LOSS:
-            self.multiplier = -1
-        else:
+        if self.key[2] == MetricType.ACC:
             self.multiplier = 1
+        else:
+            self.multiplier = -1
 
     def on_epoch_end(self, epoch: int):
         for modality in self.modalities:
@@ -124,10 +124,10 @@ class Tensorboard(Callback):
     def on_batch_end(self, batch_idx: int):
         if batch_idx % self.config_dict["tb_batch_freq"] == 0:
             for key in self.batch_end_keys:
-                if key[2] == MetricType.LOSS:
-                    value = self.history.get_batch_mean(key)
-                else:
+                if key[2] == MetricType.ACC:
                     value = self.history.get_batch_last(key)
+                else:
+                    value = self.history.get_batch_mean(key)
 
                 self.tb_writer.add_scalar(tag=keys_to_str(key),
                                           scalar_value=value,

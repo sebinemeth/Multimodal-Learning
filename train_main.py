@@ -50,10 +50,8 @@ def get_history(config_dict: dict, discord: DiscordBot) -> History:
                            (SubsetType.TRAIN, modality, MetricType.ACC)])
 
         if len(config_dict["modalities"]) > 1:
-            epoch_keys.extend([(SubsetType.TRAIN, ModalityType.RGB_DEPTH, MetricType.LOSS),
-                               (SubsetType.TRAIN, ModalityType.RGB_DEPTH, MetricType.ACC)])
-            batch_keys.extend([(SubsetType.TRAIN, ModalityType.RGB_DEPTH, MetricType.LOSS),
-                               (SubsetType.TRAIN, ModalityType.RGB_DEPTH, MetricType.ACC)])
+            epoch_keys.append((SubsetType.TRAIN, modality, MetricType.REG_LOSS))
+            batch_keys.append((SubsetType.TRAIN, modality, MetricType.REG_LOSS))
 
     history = History(config_dict=config_dict,
                       epoch_keys=epoch_keys,

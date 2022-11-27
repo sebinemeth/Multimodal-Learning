@@ -15,19 +15,20 @@ class ModalityType(Enum):
 
 
 class MetricType(Enum):
-    LOSS = 1
-    ACC = 2
+    ACC = 1
+    LOSS = 2
+    REG_LOSS = 3
 
 
 def keys_to_str(keys: Tuple[SubsetType, ModalityType, MetricType]) -> str:
     return '_'.join([key.name for key in keys])
 
 
-def convert_to_tqdm_dict(input_dict: dict):
+def convert_to_tqdm_dict(input_dict: dict) -> dict:
     result_dict = dict()
     for key, item in input_dict.items():
-        if key[2] == MetricType.LOSS:
-            result_dict[keys_to_str(key)] = "{:.2f}".format(item)
-        else:
+        if key[2] == MetricType.ACC:
             result_dict[keys_to_str(key)] = "{:.1f}%".format(item * 100)
+        else:
+            result_dict[keys_to_str(key)] = "{:.2f}".format(item)
     return result_dict

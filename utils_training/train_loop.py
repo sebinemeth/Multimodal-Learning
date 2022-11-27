@@ -99,8 +99,8 @@ class TrainLoop(object):
                         reg_loss = loss_dict[modality] + ssa_loss
                         reg_loss.backward(retain_graph=modality == ModalityType.RGB)
                         self.history.add_batch_items({(SubsetType.TRAIN,
-                                                       ModalityType.RGB_DEPTH,
-                                                       MetricType.LOSS): ssa_loss.item()})
+                                                       modality,
+                                                       MetricType.REG_LOSS): ssa_loss.item()})
                 else:
                     # uni-modal case
                     for modality in self.modalities:
