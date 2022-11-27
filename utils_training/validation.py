@@ -55,7 +55,7 @@ def validation_step(model_dict: Dict[ModalityType, Module],
 
         tq.close()
         history.end_of_epoch_val(tqdm_dict, loss_dict)
-        print(y_test)
+        print(predictions_dict)
         plot_confusion_matrix(y_test, predictions_dict, epoch, SubsetType.VAL, config_dict)
 
 
