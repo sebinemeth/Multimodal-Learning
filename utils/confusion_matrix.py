@@ -14,10 +14,9 @@ def plot_confusion_matrix(_y_test: List[np.ndarray],
                           subset_type: SubsetType,
                           config_dict: dict):
     try:
+        _y_test = np.concatenate(_y_test, axis=0)
         for modality, predictions in predictions_dict.items():
-            _y_test = np.concatenate(_y_test, axis=0)
             predictions = np.concatenate(predictions, axis=0)
-
             cm = confusion_matrix(_y_test, predictions, normalize="pred")
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=config_dict["used_classes"])
             fig, ax = plt.subplots(figsize=(15, 15))
