@@ -1,11 +1,12 @@
 from torch.utils.data import DataLoader
+from typing import Tuple
 
 from utils_datasets.nv_gesture.nv_dataset import NV
 from utils_datasets.nv_gesture.nv_utils import SubsetType
 from utils_transforms.spatial_transforms import Compose, ToTensor, Normalize, Scale
 
 
-def get_loaders(config_dict: dict):
+def get_loaders(config_dict: dict) -> Tuple[DataLoader, DataLoader]:
     norm_method = Normalize([0, 0, 0], [1, 1, 1])
     spatial_transform = Compose([Scale((config_dict["img_x"], config_dict["img_y"])), ToTensor(), norm_method])
 

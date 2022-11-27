@@ -1,7 +1,6 @@
 import torch
 from torch.nn import Module
 from torch.utils.data import DataLoader
-from statistics import mean
 from tqdm import tqdm
 from typing import Dict
 
@@ -36,9 +35,9 @@ def validation_step(model_dict: Dict[ModalityType, Module],
         tq = tqdm(total=(len(valid_loader)))
         tq.set_description('Validation')
         for batch_idx, (data_dict, y) in enumerate(valid_loader):
-            y_test.append(y.numpy())
-            y = y.to(device)
+            y_test.append(y.numpy().copy())
             total += y.size(0)
+            y = y.to(device)
 
             for modality in modalities:
                 data_dict[modality] = data_dict[modality].to(device)
@@ -54,12 +53,7 @@ def validation_step(model_dict: Dict[ModalityType, Module],
             tq.update(1)
             tq.set_postfix(**convert_to_tqdm_dict(tqdm_dict))
 
-        for key in tqdm_dict.keys():
-            if key[2] == MetricType.LOSS:
-                history.add_epoch_items({key: mean(loss_dict[key[1]])})
-            else:
-                history.add_epoch_items({key: tqdm_dict[key]})
-
+        history.end_of_epoch_val(tqdm_dict, loss_dict)
         plot_confusion_matrix(y_test, predictions_dict, epoch, SubsetType.VAL, config_dict)
 
 

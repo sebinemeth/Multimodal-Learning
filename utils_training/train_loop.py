@@ -53,7 +53,7 @@ class TrainLoop(object):
             tq = tqdm(total=(len(self.train_loader)))
             tq.set_description('ep {}'.format(epoch))
             for batch_idx, (data_dict, y) in enumerate(self.train_loader):
-                y_train.append(y.numpy())
+                y_train.append(y.numpy().copy())
                 y = y.to(self.device)
                 total += y.size(0)
 

@@ -22,13 +22,15 @@ def plot_confusion_matrix(_y_test: list,
             disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=config_dict["used_classes"])
             fig, ax = plt.subplots(figsize=(15, 15))
             disp.plot(ax=ax, values_format='.2f')
-            cm_path = os.path.join(config_dict["log_dir_path"], "cm_{}_{}_{}.png".format(modality, subset_type, epoch))
+            cm_path = os.path.join(config_dict["log_dir_path"], "cm_{}_{}_{}.png".format(modality.name,
+                                                                                         subset_type.name,
+                                                                                         epoch))
             plt.savefig(cm_path, dpi=300)
 
             if "last_cm_paths" not in config_dict:
                 config_dict["last_cm_paths"] = dict()
 
-            config_dict["last_cm_paths"]["last_cm_path_{}_{}".format(modality, subset_type)] = cm_path
+            config_dict["last_cm_paths"]["last_cm_path_{}_{}".format(modality.name, subset_type.name)] = cm_path
     except ValueError as e:
         write_log("training", "error during plot confusion matrix: {}".format(e), print_out=True, color="red",
                   title="plot cm")
