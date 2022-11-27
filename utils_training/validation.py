@@ -43,7 +43,7 @@ def validation_step(model_dict: Dict[ModalityType, Module],
             for modality in modalities:
                 data_dict[modality] = data_dict[modality].to(device)
                 output, _ = model_dict[modality](data_dict[modality])
-                loss_dict[modality].append(criterion(output, y))
+                loss_dict[modality].append(criterion(output, y).item())
                 tqdm_dict[SubsetType.VAL, modality, MetricType.LOSS] = loss_dict[modality][-1]
 
                 _, predicted = output.max(1)

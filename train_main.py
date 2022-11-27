@@ -95,7 +95,7 @@ def main() -> History:
     # Detect devices
     use_cuda = torch.cuda.is_available()  # check if GPU exists
     device = torch.device("cuda" if use_cuda else "cpu")  # use CPU or GPU
-    write_log("init", str(device), title="used device")
+    write_log("init", "device: {}".format(str(device)), title="used device", print_out=True, color="yellow")
     config_dict["device"] = device
 
     # Make save folder for the model
