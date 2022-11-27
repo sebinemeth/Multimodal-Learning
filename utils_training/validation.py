@@ -53,6 +53,7 @@ def validation_step(model_dict: Dict[ModalityType, Module],
             tq.update(1)
             tq.set_postfix(**convert_to_tqdm_dict(tqdm_dict))
 
+        tq.close()
         history.end_of_epoch_val(tqdm_dict, loss_dict)
         plot_confusion_matrix(y_test, predictions_dict, epoch, SubsetType.VAL, config_dict)
 
