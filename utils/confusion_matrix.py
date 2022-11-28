@@ -25,6 +25,7 @@ def plot_confusion_matrix(_y_test: List[np.ndarray],
                                                                                          subset_type.name,
                                                                                          epoch))
             plt.savefig(cm_path, dpi=300)
+            plt.close(fig)
 
             if "last_cm_paths" not in config_dict:
                 config_dict["last_cm_paths"] = dict()

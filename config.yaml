@@ -2,9 +2,9 @@ dataset_path: "./datasets/nvGesture"
 train_annotation_path: "./datasets/nvGesture/nvgesture_train_correct_cvpr2016_v2.lst"
 val_annotation_path: "./datasets/nvGesture/nvgesture_test_correct_cvpr2016_v2.lst"
 rgb_ckp_model_path: "./training_outputs/unimodal_rgb_5_2/2022-11-15T11:47/model/model_rgb_19.pt"
-depth_ckp_model_path: "./training_outputs/unimodal_depth_1/2022-11-27T22:47/model/DEPTH_best.pt"
+depth_ckp_model_path: "./training_outputs/unimodal_depth_1/2022-11-28T08:33/model/DEPTH_best.pt"
 
-modalities: ["DEPTH"]  # "RGB", "DEPTH"
+modalities: ["RGB", "DEPTH"]  # "RGB", "DEPTH"
 epoch: 100
 learning_rate: 0.0001
 lambda: 0.01  # 50 x 10^-3
@@ -28,11 +28,11 @@ cover_ratio: 0.5
 only_with_gesture: True
 used_classes: [10, 14, 20, 22, 24]
 
-train_batch_size: 12
+train_batch_size: 14
 train_shuffle_data: True
 train_num_of_workers: 10
 
-val_batch_size: 12
+val_batch_size: 4
 val_shuffle_data: False
 val_num_of_workers: 10
 

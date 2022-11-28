@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from glob import glob
 from statistics import mean
-from typing import Tuple, List, Dict
+from typing import Tuple, List
 
 from utils.log_maker import write_log
 from utils_datasets.nv_gesture.nv_utils import SubsetType
@@ -70,7 +70,7 @@ def get_annot_and_video_paths(annotation_file_path: str, root_path: str) -> Tupl
     return video_folders, annotations
 
 
-def get_data_info_list(subset_type: SubsetType, config_dict: dict):
+def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]:
     """
 
     """
