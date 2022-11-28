@@ -28,11 +28,11 @@ cover_ratio: 0.5
 only_with_gesture: True
 used_classes: [10, 14, 20, 22, 24]
 
-train_batch_size: 4
+train_batch_size: 12
 train_shuffle_data: True
 train_num_of_workers: 10
 
-val_batch_size: 4
+val_batch_size: 12
 val_shuffle_data: False
 val_num_of_workers: 10
 
