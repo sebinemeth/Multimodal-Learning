@@ -28,7 +28,7 @@ def get_models(config_dict) -> Tuple[Dict[ModalityType, Module], Dict[ModalityTy
             try:
                 checkpoint = torch.load(config_dict[path_map_dict[modality]])
                 model.load_state_dict(checkpoint['model_state_dict'])
-                optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+                # optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             except Exception as e:
                 write_log("init",
                           "{} model weights could not be loaded with path: {}\n{}".format(

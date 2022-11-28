@@ -3,6 +3,7 @@ import warnings
 import traceback
 import torch
 from torch.nn import Module
+from torch.optim import Optimizer
 from torchsummary import summary
 from typing import Dict
 
@@ -49,7 +50,7 @@ def main() -> History:
 
     criterion = torch.nn.CrossEntropyLoss()
     history = get_history(config_dict, discord)
-    callback_runner = get_callback_runner(model_dict, history, config_dict)
+    callback_runner = get_callback_runner(model_dict, optimizer_dict, history, config_dict)
 
     train_loop = TrainLoop(config_dict,
                            model_dict,
@@ -116,7 +117,10 @@ def get_history(config_dict: dict, discord: DiscordBot) -> History:
     return history
 
 
-def get_callback_runner(model_dict: Dict[ModalityType, Module], history: History, config_dict: dict) -> CallbackRunner:
+def get_callback_runner(model_dict: Dict[ModalityType, Module],
+                        optimizer_dict: Dict[ModalityType, Optimizer],
+                        history: History,
+                        config_dict: dict) -> CallbackRunner:
     callback_list = [EarlyStopping(
         history=history,
         config_dict=config_dict,
@@ -131,6 +135,7 @@ def get_callback_runner(model_dict: Dict[ModalityType, Module], history: History
     for modality in config_dict["modalities"]:
         callback_list.append(SaveModel(history=history,
                                        model=model_dict[modality],
+                                       optimizer=optimizer_dict[modality],
                                        modality=modality,
                                        config_dict=config_dict,
                                        only_best_key=(SubsetType.VAL, modality, MetricType.LOSS)))

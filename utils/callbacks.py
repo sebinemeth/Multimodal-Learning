@@ -71,7 +71,11 @@ class EarlyStopping(Callback):
 
 
 class SaveModel(Callback):
-    def __init__(self, history: History, model: torch.nn.Module, modality: ModalityType, config_dict: dict,
+    def __init__(self, history: History,
+                 model: torch.nn.Module,
+                 optimizer: torch.optim.Optimizer,
+                 modality: ModalityType,
+                 config_dict: dict,
                  only_best_key: Tuple[SubsetType, ModalityType, MetricType] = None):
         """
         Parameters
@@ -84,6 +88,7 @@ class SaveModel(Callback):
         """
         self.history = history
         self.model = model
+        self.optimizer = optimizer
         self.modality = modality
         self.config_dict = config_dict
         self.only_best_key = only_best_key
@@ -100,7 +105,7 @@ class SaveModel(Callback):
     def save_model(self, model_name: str):
         write_log("training", "{} model are saved".format(self.modality.name), title="save model")
         torch.save({'model_state_dict': self.model.state_dict(),
-                    'optimizer_state_dict': self.model.state_dict()},
+                    'optimizer_state_dict': self.optimizer.state_dict()},
                    os.path.join(self.config_dict["model_save_dir"], "{}.pt".format(model_name)))
 
 
