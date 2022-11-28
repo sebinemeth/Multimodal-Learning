@@ -126,18 +126,27 @@ def get_callback_runner(model_dict: Dict[ModalityType, Module], history: History
         patience=config_dict["patience"],
         delta=config_dict["delta"])]
 
+    batch_end_keys = list()
+    epoch_end_keys = list()
     for modality in config_dict["modalities"]:
-        callback_list.extend([SaveModel(history=history,
-                                        model=model_dict[modality],
-                                        modality=modality,
-                                        config_dict=config_dict,
-                                        only_best_key=(SubsetType.VAL, modality, MetricType.LOSS)),
-                              Tensorboard(history=history,
-                                          config_dict=config_dict,
-                                          batch_end_keys=[(SubsetType.TRAIN, modality, MetricType.LOSS),
-                                                          (SubsetType.TRAIN, modality, MetricType.ACC)],
-                                          epoch_end_keys=[(SubsetType.VAL, modality, MetricType.LOSS),
-                                                          (SubsetType.VAL, modality, MetricType.ACC)])])
+        callback_list.append(SaveModel(history=history,
+                                       model=model_dict[modality],
+                                       modality=modality,
+                                       config_dict=config_dict,
+                                       only_best_key=(SubsetType.VAL, modality, MetricType.LOSS)))
+        batch_end_keys.extend([(SubsetType.TRAIN, modality, MetricType.LOSS),
+                               (SubsetType.TRAIN, modality, MetricType.ACC)])
+        epoch_end_keys.extend([(SubsetType.VAL, modality, MetricType.LOSS),
+                               (SubsetType.VAL, modality, MetricType.ACC)])
+
+        if len(config_dict["modalities"]) > 0:
+            batch_end_keys.append((SubsetType.TRAIN, modality, MetricType.REG_LOSS))
+            epoch_end_keys.append((SubsetType.TRAIN, modality, MetricType.REG_LOSS))
+
+    callback_list.append(Tensorboard(history=history,
+                                     config_dict=config_dict,
+                                     batch_end_keys=batch_end_keys,
+                                     epoch_end_keys=epoch_end_keys))
     return CallbackRunner(callbacks=callback_list)
 
 

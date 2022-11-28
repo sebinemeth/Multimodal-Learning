@@ -34,7 +34,7 @@ class EarlyStopping(Callback):
         """
         Parameters
         ----------
-        history: History object with loss and accuracy values
+        history: History object with loss and accuracy valuesefore depth
         key: key to the value in history, which is observed
         patience: number of epoch without improvement
         delta: minimum improvement
