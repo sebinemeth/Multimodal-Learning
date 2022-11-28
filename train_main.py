@@ -144,7 +144,7 @@ def get_callback_runner(model_dict: Dict[ModalityType, Module],
         epoch_end_keys.extend([(SubsetType.VAL, modality, MetricType.LOSS),
                                (SubsetType.VAL, modality, MetricType.ACC)])
 
-        if len(config_dict["modalities"]) > 0:
+        if len(config_dict["modalities"]) > 1:
             batch_end_keys.append((SubsetType.TRAIN, modality, MetricType.REG_LOSS))
             epoch_end_keys.append((SubsetType.TRAIN, modality, MetricType.REG_LOSS))
 
