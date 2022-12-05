@@ -15,7 +15,7 @@ from utils_training.train_loop import TrainLoop
 from utils_training.get_models import get_models
 from utils.history import History
 from utils.callbacks import Tensorboard, SaveModel, EarlyStopping, CallbackRunner, EarlyStopException
-from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType
+from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType, NetworkType
 
 # to supress pytorch nn.MaxPool3d warning
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 def main() -> History:
     start_log_maker()
     config_dict = get_config_dict()
-    convert_modalities(config_dict)
+    convert_modalities_and_network(config_dict)
 
     # Detect devices
     use_cuda = torch.cuda.is_available()  # check if GPU exists
@@ -82,7 +82,14 @@ def write_end_log(discord: DiscordBot, text: str, title: str):
     write_log("training", text, title=title, print_out=True, color="red")
 
 
-def convert_modalities(config_dict: dict):
+def convert_modalities_and_network(config_dict: dict):
+    if config_dict["network"] == "DETECTOR":
+        config_dict["network"] = NetworkType.DETECTOR
+    elif config_dict["network"] == "CLASSIFICATOR":
+        config_dict["network"] = NetworkType.CLASSIFICATOR
+    else:
+        raise ValueError("unknown modality: {}".format(config_dict["network"]))
+
     modalities = list()
     for modality in config_dict["modalities"]:
         if modality == "RGB":

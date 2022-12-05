@@ -6,7 +6,7 @@ from statistics import mean
 from typing import Tuple, List
 
 from utils.log_maker import write_log
-from utils_datasets.nv_gesture.nv_utils import SubsetType
+from utils_datasets.nv_gesture.nv_utils import SubsetType, NetworkType
 
 
 def print_stat(data_stat_dict: dict, num_of_all_samples: int):
@@ -51,12 +51,10 @@ def get_annot_and_video_paths(annotation_file_path: str, root_path: str) -> Tupl
             line = line.strip()
             path, depth, color, duo_left, label = line.split(' ')
             path = path.split(":")[-1]
-            max_index_color = int(list(sorted(glob(os.path.join(root_path, path,
-                                                                "sk_color_all/*.jpg"))))[-1].split('/')[-1].split('.')[
-                                      0])
-            max_index_depth = int(list(sorted(glob(os.path.join(root_path, path,
-                                                                "sk_depth_all/*.jpg"))))[-1].split('/')[-1].split('.')[
-                                      0])
+            max_index_color = int(
+                sorted(glob(os.path.join(root_path, path, "sk_color_all/*.jpg")))[-1].split('/')[-1].split('.')[0])
+            max_index_depth = int(
+                sorted(glob(os.path.join(root_path, path, "sk_depth_all/*.jpg")))[-1].split('/')[-1].split('.')[0])
             max_frame_idx = min(max_index_color, max_index_depth)
 
             annotation = {"start_frame": depth.split(":")[-2],
@@ -95,26 +93,26 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]
         max_frame_idx = annotations[i]['max_frame_idx']
         begin_t = int(annotations[i]['start_frame'])
         end_t = int(annotations[i]['end_frame'])
-        label = int(annotations[i]['label'])
-
-        if len(config_dict["used_classes"]) > 0 and label not in config_dict["used_classes"]:
-            # if config_dict["used_classes"] is empty, each class will be used
-            continue
-
-        if len(config_dict["used_classes"]) > 0:
-            # map labels from 0 to num of classes - 1
-            label = config_dict["used_classes"].index(label)
 
         frame_jump = config_dict["frame_jump"]
         sample_duration = config_dict["sample_duration"]
-        num_classes = config_dict["num_classes"]
 
         if label not in data_stat_dict:
             data_stat_dict[label] = {"num_of_samples": 0, "num_of_zeros": 0, "num_of_frames": 0,
                                      "len_of_gesture": list()}
         data_stat_dict[label]["len_of_gesture"].append(min(end_t, max_frame_idx) - begin_t)
 
-        if config_dict["only_with_gesture"]:
+        if config_dict["network"] == NetworkType.CLASSIFICATOR:
+            label = int(annotations[i]['label'])
+
+            if len(config_dict["used_classes"]) > 0 and label not in config_dict["used_classes"]:
+                # if config_dict["used_classes"] is empty, each class will be used
+                continue
+
+            if len(config_dict["used_classes"]) > 0:
+                # map labels from 0 to num of classes - 1
+                label = config_dict["used_classes"].index(label)
+
             for last_frame_idx in range(min(end_t, max_frame_idx), begin_t, -1):
                 frame_indices = sorted([last_frame_idx - i for i in range(sample_duration)])
                 assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)
@@ -130,7 +128,34 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]
 
                 sample = {
                     'video_folder': video_folder,
-                    'frame_indices': list(frame_indices),
+                    'frame_indices': frame_indices,
+                    'label': label
+                }
+
+                data_info_list.append(sample)
+                data_stat_dict[label]["num_of_samples"] += 1
+                data_stat_dict[label]["num_of_zeros"] += len([idx for idx in frame_indices if idx < 0])
+                data_stat_dict[label]["num_of_frames"] += len(frame_indices)
+        elif config_dict["network"] == NetworkType.DETECTOR:
+            for last_frame_idx in range(1, max_frame_idx + 1):
+                frame_indices = sorted([last_frame_idx - i for i in range(sample_duration)])
+                assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)
+
+                # the cut is provided before the end_t
+                # the cover ratio is the ratio of frames after begin_t
+                cover_ratio = np.sum(np.logical_and(np.array(frame_indices) > begin_t,
+                                                    np.array(frame_indices) < end_t)) / len(frame_indices)
+
+                if cover_ratio < config_dict["cover_ratio"]:
+                    label = 0
+                else:
+                    label = 1
+
+                frame_indices = frame_indices[::frame_jump]
+
+                sample = {
+                    'video_folder': video_folder,
+                    'frame_indices': frame_indices,
                     'label': label
                 }
 
@@ -139,31 +164,7 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]
                 data_stat_dict[label]["num_of_zeros"] += len([idx for idx in frame_indices if idx < 0])
                 data_stat_dict[label]["num_of_frames"] += len(frame_indices)
         else:
-            # for start_frame_idx in range(max_frame_idx + 1):
-            #     last_frame_idx = start_frame_idx + (sample_duration * frame_jump)
-            #     if last_frame_idx > max_frame_idx:
-            #         break
-            #
-            #     frame_indices = sorted(list(range(start_frame_idx, last_frame_idx, frame_jump)))
-            #     assert len(frame_indices) == sample_duration, (len(frame_indices), sample_duration)
-            #
-            #     if begin_t < last_frame_idx < end_t:
-            #         # last frame is a gesture
-            #         label = int(annotations[i]['label'])
-            #     else:
-            #         # last frame is not a gesture, last label belongs to invalid
-            #         label = num_classes - 1
-            #
-            #     # n_frames = end_t - begin_t + 1
-            #
-            #     sample = {
-            #         'video_folder': video_folder,
-            #         'frame_indices': frame_indices,
-            #         'label': label
-            #     }
-            #
-            #     data_info_list.append(sample)
-            raise NotImplementedError
+            raise ValueError("network type error: {}".format(config_dict["network"]))
 
     print_stat(data_stat_dict, len(data_info_list))
     return data_info_list

@@ -164,7 +164,7 @@ def print_dict(dictionary: dict):
 def print_to_discord(discord: DiscordBot, dictionary: dict):
     keys_to_print = ["learning_rate", "lambda", "dropout_prob", "weight_decay", "sample_duration", "frame_jump",
                      "frame_jump", "cover_ratio", "used_classes", "train_batch_size", "val_batch_size", "modalities",
-                     "patience", "delta"]
+                     "patience", "delta", "network"]
     fields = list()
     for key, value in dictionary.items():
         if key in keys_to_print:

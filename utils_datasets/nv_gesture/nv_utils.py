@@ -20,6 +20,11 @@ class MetricType(Enum):
     REG_LOSS = 3
 
 
+class NetworkType(Enum):
+    DETECTOR = 1
+    CLASSIFICATOR = 2
+
+
 def keys_to_str(keys: Tuple[SubsetType, ModalityType, MetricType]) -> str:
     return '_'.join([key.name for key in keys])
 

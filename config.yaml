@@ -4,6 +4,7 @@ val_annotation_path: "./datasets/nvGesture/nvgesture_test_correct_cvpr2016_v2.ls
 rgb_ckp_model_path: "./training_outputs/unimodal_rgb_5_2/2022-11-15T11:47/model/model_rgb_19.pt"
 depth_ckp_model_path: "./training_outputs/unimodal_depth_1/2022-11-28T08:33/model/DEPTH_best.pt"
 
+network: "DETECTOR"  # "DETECTOR" "CLASSIFICATOR"
 modalities: ["RGB", "DEPTH"]  # "RGB", "DEPTH"
 epoch: 100
 learning_rate: 0.0001
@@ -25,7 +26,6 @@ depth_y: 224
 sample_duration: 64  # 64
 frame_jump: 2
 cover_ratio: 0.5
-only_with_gesture: True
 used_classes: [10, 14, 20, 22, 24]
 
 train_batch_size: 4
