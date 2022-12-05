@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATA_PATH="/Users/sebinemeth/Downloads/nvGesture_v1.7z/Video_data/"
+DATA_PATH="/Users/sebinemeth/Nextcloud/nvGesture_v1.7z/Video_data/"
 
 for CLS in "$DATA_PATH""class_"*
 do

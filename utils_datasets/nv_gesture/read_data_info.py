@@ -97,13 +97,12 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]
         frame_jump = config_dict["frame_jump"]
         sample_duration = config_dict["sample_duration"]
 
-        if label not in data_stat_dict:
-            data_stat_dict[label] = {"num_of_samples": 0, "num_of_zeros": 0, "num_of_frames": 0,
-                                     "len_of_gesture": list()}
-        data_stat_dict[label]["len_of_gesture"].append(min(end_t, max_frame_idx) - begin_t)
-
         if config_dict["network"] == NetworkType.CLASSIFICATOR:
             label = int(annotations[i]['label'])
+            if label not in data_stat_dict:
+                data_stat_dict[label] = {"num_of_samples": 0, "num_of_zeros": 0, "num_of_frames": 0,
+                                         "len_of_gesture": list()}
+            data_stat_dict[label]["len_of_gesture"].append(min(end_t, max_frame_idx) - begin_t)
 
             if len(config_dict["used_classes"]) > 0 and label not in config_dict["used_classes"]:
                 # if config_dict["used_classes"] is empty, each class will be used
@@ -158,6 +157,10 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]
                     'frame_indices': frame_indices,
                     'label': label
                 }
+                if label not in data_stat_dict:
+                    data_stat_dict[label] = {"num_of_samples": 0, "num_of_zeros": 0, "num_of_frames": 0,
+                                             "len_of_gesture": list()}
+                data_stat_dict[label]["len_of_gesture"].append(min(end_t, max_frame_idx) - begin_t)
 
                 data_info_list.append(sample)
                 data_stat_dict[label]["num_of_samples"] += 1
@@ -165,6 +168,5 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]
                 data_stat_dict[label]["num_of_frames"] += len(frame_indices)
         else:
             raise ValueError("network type error: {}".format(config_dict["network"]))
-
-    print_stat(data_stat_dict, len(data_info_list))
+    # print_stat(data_stat_dict, len(data_info_list))
     return data_info_list
