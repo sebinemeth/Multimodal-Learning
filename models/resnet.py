@@ -1,7 +1,6 @@
 from functools import partial
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from typing import Union, Type
 
 from utils_datasets.nv_gesture.nv_utils import ModalityType
@@ -159,18 +158,6 @@ class ResNet(nn.Module):
             elif isinstance(m, nn.BatchNorm3d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
-
-    @staticmethod
-    def _down_sample_basic_block(x, planes, stride):
-        out = F.avg_pool3d(x, kernel_size=1, stride=stride)
-        zero_pads = torch.zeros(out.size(0), planes - out.size(1), out.size(2),
-                                out.size(3), out.size(4))
-        if isinstance(out.data, torch.cuda.FloatTensor):
-            zero_pads = zero_pads.cuda()
-
-        out = torch.cat([out.data, zero_pads], dim=1)
-
-        return out
 
     def _make_layer(self, block, planes, blocks, shortcut_type, stride=1):
         down_sample = None
