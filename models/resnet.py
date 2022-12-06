@@ -131,10 +131,10 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm3d(self.in_planes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool3d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block,
-                                       block_inplanes[0],
-                                       layers[0],
-                                       shortcut_type)
+        # self.layer1 = self._make_layer(block,
+        #                                block_inplanes[0],
+        #                                layers[0],
+        #                                shortcut_type)
         # self.layer2 = self._make_layer(block,
         #                                block_inplanes[1],
         #                                layers[1],
@@ -205,7 +205,7 @@ class ResNet(nn.Module):
         if not self.no_max_pool:
             x = self.maxpool(x)
 
-        x = self.layer1(x)
+        # x = self.layer1(x)
         # x = self.layer2(x)
         # x = self.layer3(x)
         x = self.layer4(x)
