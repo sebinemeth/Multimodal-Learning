@@ -16,7 +16,7 @@ def get_model(config_dict: dict, modality: ModalityType) -> Module:
     if config_dict["network"] == NetworkType.DETECTOR:
         model = generate_resnet_model(model_depth=10,
                                       modality=modality,
-                                      config_dict=config_dict).to(config_dict["device"])
+                                      num_of_classes=2).to(config_dict["device"])
     elif config_dict["network"] == NetworkType.CLASSIFIER:
         model = Inception3D(num_classes=config_dict["num_of_classes"],
                             modality=modality,

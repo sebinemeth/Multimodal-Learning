@@ -102,7 +102,7 @@ class ResNet(nn.Module):
                  block: Union[Type[BasicBlock], Type[Bottleneck]],
                  layers: list,
                  modality: ModalityType,
-                 config_dict: dict,
+                 num_of_classes: int,
                  conv1_t_size: int = 7,
                  conv1_t_stride: int = 1,
                  no_max_pool: bool = False,
@@ -110,7 +110,6 @@ class ResNet(nn.Module):
                  widen_factor: float = 1.0
                  ):
         super().__init__()
-        self.config_dict = config_dict
         block_inplanes = [int(x * widen_factor) for x in [64, 128, 256, 64]]
         if modality == ModalityType.RGB:
             n_input_channels = 3
@@ -152,7 +151,7 @@ class ResNet(nn.Module):
                                        stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool3d((1, 1, 1))
-        self.fc = nn.Linear(block_inplanes[3] * block.expansion, config_dict["num_of_classes"])
+        self.fc = nn.Linear(block_inplanes[3] * block.expansion, num_of_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv3d):
@@ -163,12 +162,13 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    def _down_sample_basic_block(self, x, planes, stride):
+    @staticmethod
+    def _down_sample_basic_block(x, planes, stride):
         out = F.avg_pool3d(x, kernel_size=1, stride=stride)
         zero_pads = torch.zeros(out.size(0), planes - out.size(1), out.size(2),
                                 out.size(3), out.size(4))
         if isinstance(out.data, torch.FloatTensor):
-            zero_pads = zero_pads.to(self.config_dict["device"])
+            zero_pads = zero_pads.cuda()
 
         out = torch.cat([out.data, zero_pads], dim=1)
 
@@ -225,23 +225,23 @@ class ResNet(nn.Module):
         return x, correlation_matrix
 
 
-def generate_resnet_model(model_depth: int, modality: ModalityType, config_dict: dict) -> nn.Module:
+def generate_resnet_model(model_depth: int, modality: ModalityType, num_of_classes: int) -> nn.Module:
     supported_depth_list = (10, 18, 34, 50, 101, 152, 200)
 
     if model_depth == 10:
-        model = ResNet(BasicBlock, [1, 1, 1, 1], modality, config_dict)
+        model = ResNet(BasicBlock, [1, 1, 1, 1], modality, num_of_classes)
     elif model_depth == 18:
-        model = ResNet(BasicBlock, [2, 2, 2, 2], modality, config_dict)
+        model = ResNet(BasicBlock, [2, 2, 2, 2], modality, num_of_classes)
     elif model_depth == 34:
-        model = ResNet(BasicBlock, [3, 4, 6, 3], modality, config_dict)
+        model = ResNet(BasicBlock, [3, 4, 6, 3], modality, num_of_classes)
     elif model_depth == 50:
-        model = ResNet(Bottleneck, [3, 4, 6, 3], modality, config_dict)
+        model = ResNet(Bottleneck, [3, 4, 6, 3], modality, num_of_classes)
     elif model_depth == 101:
-        model = ResNet(Bottleneck, [3, 4, 23, 3], modality, config_dict)
+        model = ResNet(Bottleneck, [3, 4, 23, 3], modality, num_of_classes)
     elif model_depth == 152:
-        model = ResNet(Bottleneck, [3, 8, 36, 3], modality, config_dict)
+        model = ResNet(Bottleneck, [3, 8, 36, 3], modality, num_of_classes)
     elif model_depth == 200:
-        model = ResNet(Bottleneck, [3, 24, 36, 3], modality, config_dict)
+        model = ResNet(Bottleneck, [3, 24, 36, 3], modality, num_of_classes)
     else:
         raise ValueError("given model depth {} is  not supported {}".format(model_depth, supported_depth_list))
 
