@@ -33,7 +33,6 @@ def get_models(config_dict) -> Tuple[Dict[ModalityType, Module], Dict[ModalityTy
         optimizer = torch.optim.Adam(model.parameters(),
                                      lr=config_dict["learning_rate"],
                                      weight_decay=config_dict["weight_decay"])
-
         if config_dict[path_map_dict[modality]] is not None:
             try:
                 checkpoint = torch.load(config_dict[path_map_dict[modality]])
