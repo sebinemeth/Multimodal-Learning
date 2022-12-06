@@ -110,6 +110,7 @@ class ResNet(nn.Module):
                  widen_factor: float = 1.0
                  ):
         super().__init__()
+        self.config_dict = config_dict
         block_inplanes = [int(x * widen_factor) for x in [64, 128, 256, 512]]
         if modality == ModalityType.RGB:
             n_input_channels = 3
@@ -162,13 +163,12 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    @staticmethod
-    def _down_sample_basic_block(x, planes, stride):
+    def _down_sample_basic_block(self, x, planes, stride):
         out = F.avg_pool3d(x, kernel_size=1, stride=stride)
         zero_pads = torch.zeros(out.size(0), planes - out.size(1), out.size(2),
                                 out.size(3), out.size(4))
         if isinstance(out.data, torch.FloatTensor):
-            zero_pads = zero_pads.cuda()
+            zero_pads = zero_pads.to(self.config_dict["device"])
 
         out = torch.cat([out.data, zero_pads], dim=1)
 
