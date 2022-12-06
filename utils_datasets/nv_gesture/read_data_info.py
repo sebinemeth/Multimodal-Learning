@@ -97,13 +97,13 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]
         frame_jump = config_dict["frame_jump"]
         sample_duration = config_dict["sample_duration"]
 
+        label = int(annotations[i]['label'])
+
+        if len(config_dict["used_classes"]) > 0 and label not in config_dict["used_classes"]:
+            # if config_dict["used_classes"] is empty, each class will be used
+            continue
+
         if config_dict["network"] == NetworkType.CLASSIFIER:
-            label = int(annotations[i]['label'])
-
-            if len(config_dict["used_classes"]) > 0 and label not in config_dict["used_classes"]:
-                # if config_dict["used_classes"] is empty, each class will be used
-                continue
-
             if len(config_dict["used_classes"]) > 0:
                 # map labels from 0 to num of classes - 1
                 label = config_dict["used_classes"].index(label)

@@ -1,6 +1,7 @@
 from functools import partial
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from typing import Union, Type
 
 from utils_datasets.nv_gesture.nv_utils import ModalityType
@@ -105,7 +106,7 @@ class ResNet(nn.Module):
                  conv1_t_size: int = 7,
                  conv1_t_stride: int = 1,
                  no_max_pool: bool = False,
-                 shortcut_type: str = 'B',
+                 shortcut_type: str = 'A',
                  widen_factor: float = 1.0
                  ):
         super().__init__()
@@ -129,7 +130,9 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm3d(self.in_planes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool3d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, block_inplanes[0], layers[0],
+        self.layer1 = self._make_layer(block,
+                                       block_inplanes[0],
+                                       layers[0],
                                        shortcut_type)
         self.layer2 = self._make_layer(block,
                                        block_inplanes[1],
@@ -159,11 +162,23 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
+    @staticmethod
+    def _down_sample_basic_block(x, planes, stride):
+        out = F.avg_pool3d(x, kernel_size=1, stride=stride)
+        zero_pads = torch.zeros(out.size(0), planes - out.size(1), out.size(2),
+                                out.size(3), out.size(4))
+        if isinstance(out.data, torch.FloatTensor):
+            zero_pads = zero_pads.cuda()
+
+        out = torch.cat([out.data, zero_pads], dim=1)
+
+        return out
+
     def _make_layer(self, block, planes, blocks, shortcut_type, stride=1):
         down_sample = None
         if stride != 1 or self.in_planes != planes * block.expansion:
             if shortcut_type == 'A':
-                down_sample = partial(self._downsample_basic_block,
+                down_sample = partial(self._down_sample_basic_block,
                                       planes=planes * block.expansion,
                                       stride=stride)
             else:
