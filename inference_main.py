@@ -73,14 +73,16 @@ if __name__ == '__main__':
 
         y_test = list()
         frame_idx_list = list()
+        path_list = list()
         total = 0
         tqdm_dict = dict()
 
         tq = tqdm(total=(len(valid_loader)))
         tq.set_description('Inference')
-        for batch_idx, (data_dict, y, frame_idx) in enumerate(valid_loader):
+        for batch_idx, (data_dict, y, data_info) in enumerate(valid_loader):
             y_test.append(y.numpy().copy())
-            frame_idx_list.append(frame_idx.numpy().copy())
+            frame_idx_list.append(data_info[0].numpy().copy())
+            path_list.append(data_info[1])
             total += y.size(0)
             y = y.to(device)
 
@@ -101,11 +103,13 @@ if __name__ == '__main__':
     predictions = np.concatenate(predictions_dict[ModalityType.RGB], axis=0)
     y_test = np.concatenate(y_test, axis=0)
     frame_indices = np.concatenate(frame_idx_list, axis=0)
+    path_list = sum(path_list, [])
 
     data = {
         "predictions": predictions.tolist(),
         "y_test": y_test.tolist(),
-        "frame_indices": frame_indices.tolist()
+        "frame_indices": frame_indices.tolist(),
+        "path_list": path_list
     }
 
     with open('./infer_data.json', 'w') as f:
