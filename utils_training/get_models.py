@@ -14,7 +14,7 @@ path_map_dict = {ModalityType.RGB: "rgb_ckp_model_path",
 
 def get_model(config_dict: dict, modality: ModalityType) -> Module:
     if config_dict["network"] == NetworkType.DETECTOR:
-        model = generate_resnet_model(model_depth=10, config_dict=config_dict)
+        model = generate_resnet_model(model_depth=10, modality=modality, config_dict=config_dict)
     elif config_dict["network"] == NetworkType.CLASSIFIER:
         model = Inception3D(num_classes=config_dict["num_of_classes"],
                             modality=modality,

@@ -101,6 +101,7 @@ class ResNet(nn.Module):
     def __init__(self,
                  block: Union[Type[BasicBlock], Type[Bottleneck]],
                  layers: list,
+                 modality: ModalityType,
                  config_dict: dict,
                  conv1_t_size: int = 7,
                  conv1_t_stride: int = 1,
@@ -110,12 +111,12 @@ class ResNet(nn.Module):
                  ):
         super().__init__()
         block_inplanes = [int(x * widen_factor) for x in [64, 128, 256, 512]]
-        if config_dict["modality"] == ModalityType.RGB:
+        if modality == ModalityType.RGB:
             n_input_channels = 3
-        elif config_dict["modality"] == ModalityType.DEPTH:
+        elif modality == ModalityType.DEPTH:
             n_input_channels = 1
         else:
-            raise ValueError("modality type is not supported: {}".format(config_dict["modality"]))
+            raise ValueError("modality type is not supported: {}".format(modality))
 
         self.in_planes = block_inplanes[0]
         self.no_max_pool = no_max_pool
@@ -222,23 +223,23 @@ class ResNet(nn.Module):
         return x, correlation_matrix
 
 
-def generate_resnet_model(model_depth: int, config_dict: dict) -> nn.Module:
+def generate_resnet_model(model_depth: int, modality: ModalityType, config_dict: dict) -> nn.Module:
     supported_depth_list = (10, 18, 34, 50, 101, 152, 200)
 
     if model_depth == 10:
-        model = ResNet(BasicBlock, [1, 1, 1, 1], config_dict)
+        model = ResNet(BasicBlock, [1, 1, 1, 1], modality, config_dict)
     elif model_depth == 18:
-        model = ResNet(BasicBlock, [2, 2, 2, 2], config_dict)
+        model = ResNet(BasicBlock, [2, 2, 2, 2], modality, config_dict)
     elif model_depth == 34:
-        model = ResNet(BasicBlock, [3, 4, 6, 3], config_dict)
+        model = ResNet(BasicBlock, [3, 4, 6, 3], modality, config_dict)
     elif model_depth == 50:
-        model = ResNet(Bottleneck, [3, 4, 6, 3], config_dict)
+        model = ResNet(Bottleneck, [3, 4, 6, 3], modality, config_dict)
     elif model_depth == 101:
-        model = ResNet(Bottleneck, [3, 4, 23, 3], config_dict)
+        model = ResNet(Bottleneck, [3, 4, 23, 3], modality, config_dict)
     elif model_depth == 152:
-        model = ResNet(Bottleneck, [3, 8, 36, 3], config_dict)
+        model = ResNet(Bottleneck, [3, 8, 36, 3], modality, config_dict)
     elif model_depth == 200:
-        model = ResNet(Bottleneck, [3, 24, 36, 3], config_dict)
+        model = ResNet(Bottleneck, [3, 24, 36, 3], modality, config_dict)
     else:
         raise ValueError("given model depth {} is  not supported {}".format(model_depth, supported_depth_list))
 
