@@ -115,7 +115,7 @@ class ResNet(nn.Module):
         elif config_dict["modality"] == ModalityType.DEPTH:
             n_input_channels = 1
         else:
-            raise ValueError
+            raise ValueError("modality type is not supported: {}".format(config_dict["modality"]))
 
         self.in_planes = block_inplanes[0]
         self.no_max_pool = no_max_pool
