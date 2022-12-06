@@ -1,7 +1,9 @@
 import warnings
+import json
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import numpy as np
 
 from utils_training.get_models import get_models
 from utils_datasets.nv_gesture.nv_dataset import NV
@@ -13,10 +15,10 @@ if __name__ == '__main__':
     warnings.filterwarnings("ignore", category=UserWarning)
 
     config_dict = {
-        "dataset_path": "/Users/sebinemeth/Nextcloud/nvGesture_v1.7z",
-        "val_annotation_path": "/Users/sebinemeth/Nextcloud/nvGesture_v1.7z/nvgesture_test_correct_cvpr2016_v2.lst",
-        "rgb_ckp_model_path": "/Users/sebinemeth/Multimodal-Learning/models/rgb_cnn.pt",
-        "network": NetworkType.CLASSIFICATOR,
+        "dataset_path": "./datasets/nvGesture",
+        "val_annotation_path": "./datasets/nvGesture/nvgesture_test_correct_cvpr2016_v2.lst",
+        "rgb_ckp_model_path": "./training_outputs/multimodal_after_unimod_1/2022-12-05T12:01/model/RGB_end.pt",
+        "network": NetworkType.CLASSIFIER,
         "modalities": [ModalityType.RGB],
         "img_x": 224,
         "img_y": 224,
@@ -37,6 +39,7 @@ if __name__ == '__main__':
 
     use_cuda = torch.cuda.is_available()  # check if GPU exists
     device = torch.device("cuda" if use_cuda else "cpu")  # use CPU or GPU
+    print("device: {}".format(str(device)))
 
     config_dict["device"] = device
 
@@ -92,6 +95,16 @@ if __name__ == '__main__':
 
         tq.close()
 
-    predictions = predictions_dict[ModalityType.RGB]
-    breakpoint()
+    predictions = np.concatenate(predictions_dict[ModalityType.RGB], axis=0)
+    y_test = np.concatenate(y_test, axis=0)
+    frame_indices = np.concatenate(frame_idx_list, axis=0)
+
+    data = {
+        "predictions": predictions.tolist(),
+        "y_test": y_test.tolist(),
+        "frame_indices": frame_indices.tolist()
+    }
+
+    with open('./infer_data.json', 'w') as f:
+        json.dump(data, f)
 

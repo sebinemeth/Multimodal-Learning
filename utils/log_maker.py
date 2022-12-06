@@ -56,11 +56,13 @@ def write_log(file_name, log_message, title: str = None, blank_line: bool = True
     blank_line: put one blank line after the message
     separate_into_line: if True then list, tuple and dict will be writen more lines
     """
-    if log_maker is None:
-        return
 
     if print_out:
         print(colored(log_message, color=color))
+
+    if log_maker is None:
+        print(colored("LogMaker is inactive", color="red"))
+        return
 
     log_id = log_maker.get_log_id()
 
