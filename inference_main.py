@@ -16,7 +16,7 @@ if __name__ == '__main__':
         "dataset_path": "/Users/sebinemeth/Nextcloud/nvGesture_v1.7z",
         "val_annotation_path": "/Users/sebinemeth/Nextcloud/nvGesture_v1.7z/nvgesture_test_correct_cvpr2016_v2.lst",
         "rgb_ckp_model_path": "/Users/sebinemeth/Multimodal-Learning/models/rgb_cnn.pt",
-        "network": NetworkType.CLASSIFICATOR,
+        "network": NetworkType.CLASSIFIER,
         "modalities": [ModalityType.RGB],
         "img_x": 224,
         "img_y": 224,

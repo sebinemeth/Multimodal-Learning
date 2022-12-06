@@ -97,7 +97,7 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]
         frame_jump = config_dict["frame_jump"]
         sample_duration = config_dict["sample_duration"]
 
-        if config_dict["network"] == NetworkType.CLASSIFICATOR:
+        if config_dict["network"] == NetworkType.CLASSIFIER:
             label = int(annotations[i]['label'])
             if label not in data_stat_dict:
                 data_stat_dict[label] = {"num_of_samples": 0, "num_of_zeros": 0, "num_of_frames": 0,

@@ -85,8 +85,8 @@ def write_end_log(discord: DiscordBot, text: str, title: str):
 def convert_modalities_and_network(config_dict: dict):
     if config_dict["network"] == "DETECTOR":
         config_dict["network"] = NetworkType.DETECTOR
-    elif config_dict["network"] == "CLASSIFICATOR":
-        config_dict["network"] = NetworkType.CLASSIFICATOR
+    elif config_dict["network"] == "CLASSIFIER":
+        config_dict["network"] = NetworkType.CLASSIFIER
     else:
         raise ValueError("unknown modality: {}".format(config_dict["network"]))
 
