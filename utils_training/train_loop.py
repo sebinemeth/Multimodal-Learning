@@ -69,7 +69,7 @@ class TrainLoop(object):
                     model_output_dict[modality] = output
                     feature_map_dict[modality] = feature_map
                     if self.config_dict["network"] == NetworkType.DETECTOR:
-                        loss_dict[modality] = self.criterion(output, torch.unsqueeze(y, 1))
+                        loss_dict[modality] = self.criterion(output.float(), torch.unsqueeze(y, 1).float())
                     elif self.config_dict["network"] == NetworkType.CLASSIFIER:
                         loss_dict[modality] = self.criterion(output, y)
                     else:
