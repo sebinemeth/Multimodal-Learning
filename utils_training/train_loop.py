@@ -2,6 +2,7 @@ import math
 from tqdm import tqdm
 import torch
 from torch.nn import Module
+from torch.nn.functional import sigmoid
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from typing import Dict
@@ -11,7 +12,7 @@ from utils_training.validation import validation_step
 from utils.history import History
 from utils.callbacks import CallbackRunner
 from utils.discord import DiscordBot
-from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType
+from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType, NetworkType
 
 
 class TrainLoop(object):
@@ -108,7 +109,13 @@ class TrainLoop(object):
 
                 for modality in self.modalities:
                     self.optimizer_dict[modality].step()
-                    _, predicted = model_output_dict[modality].max(1)
+                    if self.config_dict["network"] == NetworkType.DETECTOR:
+                        predicted = torch.round(sigmoid(model_output_dict[modality]))
+                    elif self.config_dict["network"] == NetworkType.CLASSIFIER:
+                        _, predicted = model_output_dict[modality].max(1)
+                    else:
+                        raise ValueError("unknown modality: {}".format(self.config_dict["network"]))
+
                     correct_dict[modality] += predicted.eq(y).sum().item()
                     predictions_dict[modality].append(predicted.cpu().numpy())
                     acc = correct_dict[modality] / total

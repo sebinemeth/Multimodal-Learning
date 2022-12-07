@@ -2,6 +2,7 @@ import warnings
 import json
 import torch
 from torch.utils.data import DataLoader
+from torch.nn.functional import sigmoid
 from tqdm import tqdm
 import numpy as np
 
@@ -90,7 +91,13 @@ if __name__ == '__main__':
                 data_dict[modality] = data_dict[modality].to(device)
                 output, _ = model_dict[modality](data_dict[modality])
 
-                _, predicted = output.max(1)
+                if config_dict["network"] == NetworkType.DETECTOR:
+                    predicted = torch.round(sigmoid(output))
+                elif config_dict["network"] == NetworkType.CLASSIFIER:
+                    _, predicted = output.max(1)
+                else:
+                    raise ValueError("unknown modality: {}".format(config_dict["network"]))
+
                 correct_dict[modality] += predicted.eq(y).sum().item()
                 predictions_dict[modality].append(predicted.cpu().numpy())
                 tqdm_dict[SubsetType.VAL, modality, MetricType.ACC] = correct_dict[modality] / total
