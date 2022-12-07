@@ -68,7 +68,12 @@ class TrainLoop(object):
                     output, feature_map = self.model_dict[modality](data_dict[modality])
                     model_output_dict[modality] = output
                     feature_map_dict[modality] = feature_map
-                    loss_dict[modality] = self.criterion(output, y)
+                    if self.config_dict["network"] == NetworkType.DETECTOR:
+                        loss_dict[modality] = self.criterion(output, torch.unsqueeze(y, 1))
+                    elif self.config_dict["network"] == NetworkType.CLASSIFIER:
+                        loss_dict[modality] = self.criterion(output, y)
+                    else:
+                        raise ValueError("unknown modality: {}".format(self.config_dict["network"]))
 
                 # only in multi-modal case
                 if len(self.modalities) > 1:
