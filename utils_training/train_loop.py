@@ -57,6 +57,7 @@ class TrainLoop(object):
                 y_train.append(y.numpy().copy())
                 y = y.to(self.device)
                 total += y.size(0)
+                print(y.size(0))
 
                 model_output_dict = dict()
                 feature_map_dict = dict()
