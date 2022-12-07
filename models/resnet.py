@@ -143,7 +143,7 @@ class ResNet(nn.Module):
                                        block_inplanes[2],
                                        layers[2],
                                        shortcut_type,
-                                       stride=1)
+                                       stride=2)
         self.layer4 = self._make_layer(block,
                                        block_inplanes[3],
                                        layers[3],
@@ -207,7 +207,7 @@ class ResNet(nn.Module):
 
         # x = self.layer1(x)
         # x = self.layer2(x)
-        # x = self.layer3(x)
+        x = self.layer3(x)
         x = self.layer4(x)
         feature_map = x
         #####################################################################################
