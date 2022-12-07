@@ -103,9 +103,9 @@ def convert_modalities_and_network(config_dict: dict):
 
 
 def get_criterion(config_dict: dict) -> torch.nn.Module:
-    if config_dict["network"] == "DETECTOR":
+    if config_dict["network"] == NetworkType.DETECTOR:
         criterion = torch.nn.BCEWithLogitsLoss()
-    elif config_dict["network"] == "CLASSIFIER":
+    elif config_dict["network"] == NetworkType.CLASSIFIER:
         criterion = torch.nn.CrossEntropyLoss()
     else:
         raise ValueError("unknown modality: {}".format(config_dict["network"]))
