@@ -110,7 +110,7 @@ class ResNet(nn.Module):
                  widen_factor: float = 1.0
                  ):
         super().__init__()
-        block_inplanes = [int(x * widen_factor) for x in [64, 128, 256, 64]]
+        block_inplanes = [int(x * widen_factor) for x in [64, 128, 256, 128]]
         if modality == ModalityType.RGB:
             n_input_channels = 3
         elif modality == ModalityType.DEPTH:
