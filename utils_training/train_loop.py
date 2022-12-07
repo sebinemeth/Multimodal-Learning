@@ -115,7 +115,7 @@ class TrainLoop(object):
                 for modality in self.modalities:
                     self.optimizer_dict[modality].step()
                     if self.config_dict["network"] == NetworkType.DETECTOR:
-                        predicted = torch.round(sigmoid(model_output_dict[modality]))
+                        predicted = torch.round(sigmoid(model_output_dict[modality])).detach()
                     elif self.config_dict["network"] == NetworkType.CLASSIFIER:
                         _, predicted = model_output_dict[modality].max(1)
                     else:
