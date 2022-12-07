@@ -143,7 +143,7 @@ class ResNet(nn.Module):
                                        block_inplanes[2],
                                        layers[2],
                                        shortcut_type,
-                                       stride=2)
+                                       stride=1)
         self.layer4 = self._make_layer(block,
                                        block_inplanes[3],
                                        layers[3],
