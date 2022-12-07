@@ -57,7 +57,7 @@ class TrainLoop(object):
                 y_train.append(y.numpy().copy())
                 y = y.to(self.device)
                 total += y.size(0)
-                print(y.size(0))
+                print(total)
 
                 model_output_dict = dict()
                 feature_map_dict = dict()
@@ -122,7 +122,9 @@ class TrainLoop(object):
                     else:
                         raise ValueError("unknown modality: {}".format(self.config_dict["network"]))
 
+                    print(predicted)
                     correct_dict[modality] += predicted.eq(y).sum().item()
+                    print(correct_dict[modality])
                     predictions_dict[modality].append(predicted.cpu().numpy())
                     acc = correct_dict[modality] / total
 
