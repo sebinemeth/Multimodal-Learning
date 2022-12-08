@@ -1,11 +1,11 @@
 import math
-from tqdm import tqdm
 import torch
 from torch.nn import Module
 from torch.nn.functional import sigmoid
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from typing import Dict
+from tqdm import tqdm
 
 from utils.confusion_matrix import plot_confusion_matrix
 from utils_training.validation import validation_step
@@ -56,6 +56,8 @@ class TrainLoop(object):
             for batch_idx, (data_dict, y, _) in enumerate(self.train_loader):
                 y_train.append(y.numpy().copy())
                 y = y.to(self.device)
+                if self.config_dict["network"] == NetworkType.DETECTOR:
+                    y = torch.unsqueeze(y, dim=1).float()
                 total += y.size(0)
 
                 model_output_dict = dict()
@@ -68,13 +70,7 @@ class TrainLoop(object):
                     output, feature_map = self.model_dict[modality](data_dict[modality])
                     model_output_dict[modality] = output
                     feature_map_dict[modality] = feature_map
-                    if self.config_dict["network"] == NetworkType.DETECTOR:
-                        y = torch.unsqueeze(y, dim=1).float()
-                        loss_dict[modality] = self.criterion(output, y)
-                    elif self.config_dict["network"] == NetworkType.CLASSIFIER:
-                        loss_dict[modality] = self.criterion(output, y)
-                    else:
-                        raise ValueError("unknown modality: {}".format(self.config_dict["network"]))
+                    loss_dict[modality] = self.criterion(output, y)
 
                 # only in multi-modal case
                 if len(self.modalities) > 1:
