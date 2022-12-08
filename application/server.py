@@ -1,18 +1,22 @@
 import argparse
 import base64
+import queue
 import time
 
 import cv2
 import eventlet
 import numpy as np
 import socketio
+import multiprocessing as mp
 
-from application.model import Model
+from application.model import model_processor
 from application.webcam_streamer import WebcamStreamer
 from application.frame_cache import FrameCache
 
-cache = FrameCache(32)
-model = Model()
+cache = FrameCache(32, fps=16)
+frame_queue = mp.Queue(maxsize=100)
+result_queue = mp.Queue(maxsize=20)
+stop_event = mp.Event()
 
 """sio = socketio.Server()
 app = socketio.WSGIApp(sio)
@@ -38,17 +42,6 @@ def disconnect(sid):
     cache.write()
 
 """
-cnt = 0
-
-
-def process_frame(frame, seq, t):
-    global cnt
-    print(seq, t)
-    cache.add_frame(frame, seq)
-    if cnt % 5 == 0:
-        model(cache.frames)
-    cnt += 1
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -61,8 +54,27 @@ if __name__ == "__main__":
 
     if args.lonely:
         webcam = WebcamStreamer()
-        webcam.run(action=process_frame, sleep=0.05, show=True)
+        processor = mp.Process(target=model_processor, args=(frame_queue, result_queue, stop_event))
+        processor.start()
+
+        def process_frame(frame, seq, t):
+            # print(seq, t)
+            cache.add_frame(frame, seq)
+            try:
+                frame_queue.put_nowait(cache.frames)
+            except queue.Full:
+                pass
+
+        webcam.run(
+            action=process_frame,
+            result_queue=result_queue,
+            show=True
+        )
         cache.write()
+        stop_event.set()
+        processor.join()
+
+        print(" - end of script")
 
         # x = threading.Thread(target=thread_function, args=(1,))
         # x.start()

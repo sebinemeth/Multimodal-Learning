@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import torch
 
@@ -52,4 +54,21 @@ class Model(object):
         with torch.no_grad():
             output, _ = self.model(frames)
 
-        print(F.softmax(output, dim=1))
+        return F.softmax(output, dim=1).detach().cpu().numpy().squeeze()
+
+
+def model_processor(frame_queue, result_queue, stop_event):
+    model = Model()
+    print(" - started process")
+
+    while True:
+        # time.sleep(0.01)
+        if stop_event.is_set():
+            break
+        if not frame_queue.empty():
+            frames = frame_queue.get_nowait()
+            result = model(frames)
+            result_queue.put(result)
+
+    print(" - ended process")
+
