@@ -10,7 +10,7 @@ import torch.nn.functional as F
 class Model(object):
     def __init__(self):
         config_dict = {
-            "rgb_ckp_model_path": "/Users/sebinemeth/Multimodal-Learning/models/rgb_cnn.pt",
+            "rgb_ckp_model_path": "./models/rgb_cnn.pt",
             "network": NetworkType.CLASSIFICATOR,
             "modalities": [ModalityType.RGB],
             "img_x": 224,
@@ -27,12 +27,14 @@ class Model(object):
         use_cuda = torch.cuda.is_available()  # check if GPU exists
         self.device = torch.device("cuda" if use_cuda else "cpu")  # use CPU or GPU
 
+        print(self.device)
+
         config_dict["device"] = self.device
 
         # model_dict, _ = get_models(config_dict)
 
         # self.model = model_dict[ModalityType.RGB].to(self.device)
-        self.model = torch.jit.load(config_dict["rgb_ckp_model_path"])
+        self.model = torch.jit.load(config_dict["rgb_ckp_model_path"]).to(self.device)
         self.model.eval()
         self.norm_method = Normalize([0, 0, 0], [1, 1, 1])
         self.to_tensor = ToTensor()
@@ -50,4 +52,4 @@ class Model(object):
         with torch.no_grad():
             output, _ = self.model(frames)
 
-        print(F.softmax(output))
+        print(F.softmax(output, dim=1))

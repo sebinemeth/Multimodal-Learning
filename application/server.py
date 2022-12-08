@@ -11,12 +11,11 @@ from application.model import Model
 from application.webcam_streamer import WebcamStreamer
 from application.frame_cache import FrameCache
 
-sio = socketio.Server()
-app = socketio.WSGIApp(sio)
-
 cache = FrameCache(32)
 model = Model()
 
+"""sio = socketio.Server()
+app = socketio.WSGIApp(sio)
 
 @sio.event
 def connect(sid, environ):
@@ -38,14 +37,16 @@ def disconnect(sid):
     print('disconnect ', sid)
     cache.write()
 
+"""
 cnt = 0
+
+
 def process_frame(frame, seq, t):
     global cnt
     print(seq, t)
     cache.add_frame(frame, seq)
-    if cnt % 32 == 0:
+    if cnt % 5 == 0:
         model(cache.frames)
-        input()
     cnt += 1
 
 
@@ -62,5 +63,8 @@ if __name__ == "__main__":
         webcam = WebcamStreamer()
         webcam.run(action=process_frame, sleep=0.05, show=True)
         cache.write()
+
+        # x = threading.Thread(target=thread_function, args=(1,))
+        # x.start()
     else:
         eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
