@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import torch
 
@@ -27,12 +29,14 @@ class Model(object):
         use_cuda = torch.cuda.is_available()  # check if GPU exists
         self.device = torch.device("cuda" if use_cuda else "cpu")  # use CPU or GPU
 
+        print(self.device)
+
         config_dict["device"] = self.device
 
         # model_dict, _ = get_models(config_dict)
 
         # self.model = model_dict[ModalityType.RGB].to(self.device)
-        self.model = torch.jit.load(config_dict["rgb_ckp_model_path"])
+        self.model = torch.jit.load(config_dict["rgb_ckp_model_path"]).to(self.device)
         self.model.eval()
         self.norm_method = Normalize([0, 0, 0], [1, 1, 1])
         self.to_tensor = ToTensor()
@@ -50,4 +54,21 @@ class Model(object):
         with torch.no_grad():
             output, _ = self.model(frames)
 
-        print(F.softmax(output))
+        return F.softmax(output, dim=1).detach().cpu().numpy().squeeze()
+
+
+def model_processor(frame_queue, result_queue, stop_event):
+    model = Model()
+    print(" - started process")
+
+    while True:
+        # time.sleep(0.01)
+        if stop_event.is_set():
+            break
+        if not frame_queue.empty():
+            frames = frame_queue.get_nowait()
+            result = model(frames)
+            result_queue.put(result)
+
+    print(" - ended process")
+

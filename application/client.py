@@ -30,9 +30,5 @@ if __name__ == '__main__':
     sio.connect('http://localhost:5000')
 
     webcam = WebcamStreamer()
-    webcam.run(
-        action=lambda f, s, t: process_frame(sio, f, s, t),
-        sleep=0.1,
-        show=True,
-    )
+    webcam.run(action=lambda f, s, t: process_frame(sio, f, s, t), sleep=0.1, show=True)
     sio.disconnect()
