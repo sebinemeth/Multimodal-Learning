@@ -34,7 +34,7 @@ def validation_step(model_dict: Dict[ModalityType, Module],
 
         tq = tqdm(total=(len(valid_loader)))
         tq.set_description('Validation')
-        for batch_idx, (data_dict, y) in enumerate(valid_loader):
+        for batch_idx, (data_dict, y, _) in enumerate(valid_loader):
             y_test.append(y.numpy().copy())
             total += y.size(0)
             y = y.to(device)

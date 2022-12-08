@@ -101,7 +101,8 @@ class ResNet(nn.Module):
     def __init__(self,
                  block: Union[Type[BasicBlock], Type[Bottleneck]],
                  layers: list,
-                 config_dict: dict,
+                 modality: ModalityType,
+                 output_shape: int,
                  conv1_t_size: int = 7,
                  conv1_t_stride: int = 1,
                  no_max_pool: bool = False,
@@ -109,13 +110,13 @@ class ResNet(nn.Module):
                  widen_factor: float = 1.0
                  ):
         super().__init__()
-        block_inplanes = [int(x * widen_factor) for x in [64, 128, 256, 512]]
-        if config_dict["modality"] == ModalityType.RGB:
+        block_inplanes = [int(x * widen_factor) for x in [64, 128, 128, 128]]
+        if modality == ModalityType.RGB:
             n_input_channels = 3
-        elif config_dict["modality"] == ModalityType.DEPTH:
+        elif modality == ModalityType.DEPTH:
             n_input_channels = 1
         else:
-            raise ValueError
+            raise ValueError("modality type is not supported: {}".format(modality))
 
         self.in_planes = block_inplanes[0]
         self.no_max_pool = no_max_pool
@@ -129,13 +130,15 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm3d(self.in_planes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool3d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, block_inplanes[0], layers[0],
-                                       shortcut_type)
-        self.layer2 = self._make_layer(block,
-                                       block_inplanes[1],
-                                       layers[1],
-                                       shortcut_type,
-                                       stride=2)
+        # self.layer1 = self._make_layer(block,
+        #                                block_inplanes[0],
+        #                                layers[0],
+        #                                shortcut_type)
+        # self.layer2 = self._make_layer(block,
+        #                                block_inplanes[1],
+        #                                layers[1],
+        #                                shortcut_type,
+        #                                stride=2)
         self.layer3 = self._make_layer(block,
                                        block_inplanes[2],
                                        layers[2],
@@ -148,7 +151,7 @@ class ResNet(nn.Module):
                                        stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool3d((1, 1, 1))
-        self.fc = nn.Linear(block_inplanes[3] * block.expansion, config_dict["num_of_classes"])
+        self.fc = nn.Linear(block_inplanes[3] * block.expansion, output_shape)
 
         for m in self.modules():
             if isinstance(m, nn.Conv3d):
@@ -164,7 +167,7 @@ class ResNet(nn.Module):
         out = F.avg_pool3d(x, kernel_size=1, stride=stride)
         zero_pads = torch.zeros(out.size(0), planes - out.size(1), out.size(2),
                                 out.size(3), out.size(4))
-        if isinstance(out.data, torch.cuda.FloatTensor):
+        if isinstance(out.data, torch.FloatTensor):
             zero_pads = zero_pads.cuda()
 
         out = torch.cat([out.data, zero_pads], dim=1)
@@ -175,7 +178,7 @@ class ResNet(nn.Module):
         down_sample = None
         if stride != 1 or self.in_planes != planes * block.expansion:
             if shortcut_type == 'A':
-                down_sample = partial(self._downsample_basic_block,
+                down_sample = partial(self._down_sample_basic_block,
                                       planes=planes * block.expansion,
                                       stride=stride)
             else:
@@ -202,8 +205,8 @@ class ResNet(nn.Module):
         if not self.no_max_pool:
             x = self.maxpool(x)
 
-        x = self.layer1(x)
-        x = self.layer2(x)
+        # x = self.layer1(x)
+        # x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
         feature_map = x
@@ -222,23 +225,23 @@ class ResNet(nn.Module):
         return x, correlation_matrix
 
 
-def generate_resnet_model(model_depth: int, config_dict: dict) -> nn.Module:
+def generate_resnet_model(model_depth: int, modality: ModalityType, output_shape: int) -> nn.Module:
     supported_depth_list = (10, 18, 34, 50, 101, 152, 200)
 
     if model_depth == 10:
-        model = ResNet(BasicBlock, [1, 1, 1, 1], config_dict)
+        model = ResNet(BasicBlock, [1, 1, 1, 1], modality, output_shape)
     elif model_depth == 18:
-        model = ResNet(BasicBlock, [2, 2, 2, 2], config_dict)
+        model = ResNet(BasicBlock, [2, 2, 2, 2], modality, output_shape)
     elif model_depth == 34:
-        model = ResNet(BasicBlock, [3, 4, 6, 3], config_dict)
+        model = ResNet(BasicBlock, [3, 4, 6, 3], modality, output_shape)
     elif model_depth == 50:
-        model = ResNet(Bottleneck, [3, 4, 6, 3], config_dict)
+        model = ResNet(Bottleneck, [3, 4, 6, 3], modality, output_shape)
     elif model_depth == 101:
-        model = ResNet(Bottleneck, [3, 4, 23, 3], config_dict)
+        model = ResNet(Bottleneck, [3, 4, 23, 3], modality, output_shape)
     elif model_depth == 152:
-        model = ResNet(Bottleneck, [3, 8, 36, 3], config_dict)
+        model = ResNet(Bottleneck, [3, 8, 36, 3], modality, output_shape)
     elif model_depth == 200:
-        model = ResNet(Bottleneck, [3, 24, 36, 3], config_dict)
+        model = ResNet(Bottleneck, [3, 24, 36, 3], modality, output_shape)
     else:
         raise ValueError("given model depth {} is  not supported {}".format(model_depth, supported_depth_list))
 

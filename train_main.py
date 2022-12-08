@@ -48,7 +48,7 @@ def main() -> History:
             chanel_size = 3 if modality == ModalityType.RGB else 1
             summary(model, input_size=(chanel_size, 32, 224, 224))  # (chanel, duration, width, height)
 
-    criterion = torch.nn.CrossEntropyLoss()
+    criterion = get_criterion(config_dict)
     history = get_history(config_dict, discord)
     callback_runner = get_callback_runner(model_dict, optimizer_dict, history, config_dict)
 
@@ -85,8 +85,8 @@ def write_end_log(discord: DiscordBot, text: str, title: str):
 def convert_modalities_and_network(config_dict: dict):
     if config_dict["network"] == "DETECTOR":
         config_dict["network"] = NetworkType.DETECTOR
-    elif config_dict["network"] == "CLASSIFICATOR":
-        config_dict["network"] = NetworkType.CLASSIFICATOR
+    elif config_dict["network"] == "CLASSIFIER":
+        config_dict["network"] = NetworkType.CLASSIFIER
     else:
         raise ValueError("unknown modality: {}".format(config_dict["network"]))
 
@@ -100,6 +100,16 @@ def convert_modalities_and_network(config_dict: dict):
             raise ValueError("unknown modality: {}".format(modality))
 
     config_dict["modalities"] = modalities
+
+
+def get_criterion(config_dict: dict) -> torch.nn.Module:
+    if config_dict["network"] == NetworkType.DETECTOR:
+        criterion = torch.nn.BCEWithLogitsLoss()
+    elif config_dict["network"] == NetworkType.CLASSIFIER:
+        criterion = torch.nn.CrossEntropyLoss()
+    else:
+        raise ValueError("unknown modality: {}".format(config_dict["network"]))
+    return criterion
 
 
 def get_history(config_dict: dict, discord: DiscordBot) -> History:

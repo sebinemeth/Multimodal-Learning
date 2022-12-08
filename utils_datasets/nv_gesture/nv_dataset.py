@@ -29,7 +29,7 @@ class NV(data.Dataset):
         self.modalities = config_dict["modalities"]
         self.img_size = config_dict["img_x"], config_dict["img_y"]
 
-    def __getitem__(self, index: int) -> Tuple[Dict[ModalityType, torch.Tensor], torch.Tensor, torch.Tensor]:
+    def __getitem__(self, index: int) -> Tuple[Dict[ModalityType, torch.Tensor], torch.Tensor, tuple]:
         """
         Args:
             index (int): Index
@@ -52,7 +52,7 @@ class NV(data.Dataset):
 
         # shape: (1)
         target = self.data_info_list[index]["label"]
-        return image_list_dict, target, max(frame_indices)
+        return image_list_dict, target, (max(frame_indices), path)
 
     def __len__(self) -> int:
         return len(self.data_info_list)

@@ -2,6 +2,7 @@ import math
 from tqdm import tqdm
 import torch
 from torch.nn import Module
+from torch.nn.functional import sigmoid
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from typing import Dict
@@ -11,7 +12,7 @@ from utils_training.validation import validation_step
 from utils.history import History
 from utils.callbacks import CallbackRunner
 from utils.discord import DiscordBot
-from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType
+from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType, NetworkType
 
 
 class TrainLoop(object):
@@ -52,10 +53,11 @@ class TrainLoop(object):
 
             tq = tqdm(total=(len(self.train_loader)))
             tq.set_description('ep {}'.format(epoch))
-            for batch_idx, (data_dict, y) in enumerate(self.train_loader):
+            for batch_idx, (data_dict, y, _) in enumerate(self.train_loader):
                 y_train.append(y.numpy().copy())
                 y = y.to(self.device)
                 total += y.size(0)
+                print(total)
 
                 model_output_dict = dict()
                 feature_map_dict = dict()
@@ -67,7 +69,12 @@ class TrainLoop(object):
                     output, feature_map = self.model_dict[modality](data_dict[modality])
                     model_output_dict[modality] = output
                     feature_map_dict[modality] = feature_map
-                    loss_dict[modality] = self.criterion(output, y)
+                    if self.config_dict["network"] == NetworkType.DETECTOR:
+                        loss_dict[modality] = self.criterion(output.float(), torch.unsqueeze(y, 1).float())
+                    elif self.config_dict["network"] == NetworkType.CLASSIFIER:
+                        loss_dict[modality] = self.criterion(output, y)
+                    else:
+                        raise ValueError("unknown modality: {}".format(self.config_dict["network"]))
 
                 # only in multi-modal case
                 if len(self.modalities) > 1:
@@ -108,8 +115,16 @@ class TrainLoop(object):
 
                 for modality in self.modalities:
                     self.optimizer_dict[modality].step()
-                    _, predicted = model_output_dict[modality].max(1)
+                    if self.config_dict["network"] == NetworkType.DETECTOR:
+                        predicted = torch.round(sigmoid(model_output_dict[modality])).detach()
+                    elif self.config_dict["network"] == NetworkType.CLASSIFIER:
+                        _, predicted = model_output_dict[modality].max(1)
+                    else:
+                        raise ValueError("unknown modality: {}".format(self.config_dict["network"]))
+
+                    print(predicted)
                     correct_dict[modality] += predicted.eq(y).sum().item()
+                    print(correct_dict[modality])
                     predictions_dict[modality].append(predicted.cpu().numpy())
                     acc = correct_dict[modality] / total
 

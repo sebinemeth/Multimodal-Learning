@@ -22,7 +22,7 @@ class MetricType(Enum):
 
 class NetworkType(Enum):
     DETECTOR = 1
-    CLASSIFICATOR = 2
+    CLASSIFIER = 2
 
 
 def keys_to_str(keys: Tuple[SubsetType, ModalityType, MetricType]) -> str:

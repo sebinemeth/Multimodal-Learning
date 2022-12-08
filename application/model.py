@@ -10,8 +10,8 @@ import torch.nn.functional as F
 class Model(object):
     def __init__(self):
         config_dict = {
-            "rgb_ckp_model_path": "./models/rgb_cnn.pt",
-            "network": NetworkType.CLASSIFICATOR,
+            "rgb_ckp_model_path": "/Users/sebinemeth/Multimodal-Learning/models/rgb_cnn.pt",
+            "network": NetworkType.CLASSIFIER,
             "modalities": [ModalityType.RGB],
             "img_x": 224,
             "img_y": 224,

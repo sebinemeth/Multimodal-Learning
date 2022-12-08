@@ -14,8 +14,10 @@ path_map_dict = {ModalityType.RGB: "rgb_ckp_model_path",
 
 def get_model(config_dict: dict, modality: ModalityType) -> Module:
     if config_dict["network"] == NetworkType.DETECTOR:
-        model = generate_resnet_model(model_depth=10, config_dict=config_dict)
-    elif config_dict["network"] == NetworkType.CLASSIFICATOR:
+        model = generate_resnet_model(model_depth=10,
+                                      modality=modality,
+                                      output_shape=1).to(config_dict["device"])
+    elif config_dict["network"] == NetworkType.CLASSIFIER:
         model = Inception3D(num_classes=config_dict["num_of_classes"],
                             modality=modality,
                             dropout_prob=config_dict["dropout_prob"],
@@ -33,7 +35,6 @@ def get_models(config_dict) -> Tuple[Dict[ModalityType, Module], Dict[ModalityTy
         optimizer = torch.optim.Adam(model.parameters(),
                                      lr=config_dict["learning_rate"],
                                      weight_decay=config_dict["weight_decay"])
-
         if config_dict[path_map_dict[modality]] is not None:
             try:
                 checkpoint = torch.load(config_dict[path_map_dict[modality]])
