@@ -39,7 +39,8 @@ def get_models(config_dict) -> Tuple[Dict[ModalityType, Module], Dict[ModalityTy
             try:
                 checkpoint = torch.load(config_dict[path_map_dict[modality]])
                 model.load_state_dict(checkpoint['model_state_dict'])
-                model.dropout.p = config_dict["dropout_prob"]
+                if config_dict["network"] == NetworkType.CLASSIFIER:
+                    model.dropout.p = config_dict["dropout_prob"]
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             except Exception as e:
                 write_log("init",
