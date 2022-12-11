@@ -20,9 +20,9 @@ class FrameCache(object):
             return
         self.seq = seq
         self.time = time.time()
-        self.frames = np.roll(self.frames, shift=1, axis=0)
+        self.frames = np.roll(self.frames, shift=-1, axis=0)
         gc.collect()
-        self.frames[0, :, :, :] = frame
+        self.frames[-1, :, :, :] = frame
         # print(np.mean(self.frames))
         # detect(f)
 

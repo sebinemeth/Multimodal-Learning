@@ -14,7 +14,7 @@ from application.webcam_streamer import WebcamStreamer
 from application.frame_cache import FrameCache
 
 cache = FrameCache(32, fps=16)
-frame_queue = mp.Queue(maxsize=100)
+frame_queue = mp.Queue(maxsize=1)
 result_queue = mp.Queue(maxsize=20)
 stop_event = mp.Event()
 
