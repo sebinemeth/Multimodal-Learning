@@ -1,12 +1,13 @@
 import torch
 from torch.nn import Module
 from torch.utils.data import DataLoader
+from torch.nn.functional import sigmoid
 from tqdm import tqdm
 from typing import Dict
 
 from utils.confusion_matrix import plot_confusion_matrix
 from utils.history import History
-from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType, convert_to_tqdm_dict
+from utils_datasets.nv_gesture.nv_utils import SubsetType, ModalityType, MetricType,  NetworkType, convert_to_tqdm_dict
 
 
 def validation_step(model_dict: Dict[ModalityType, Module],
@@ -38,6 +39,8 @@ def validation_step(model_dict: Dict[ModalityType, Module],
             y_test.append(y.numpy().copy())
             total += y.size(0)
             y = y.to(device)
+            if config_dict["network"] == NetworkType.DETECTOR:
+                y = torch.unsqueeze(y, dim=1).float()
 
             for modality in modalities:
                 data_dict[modality] = data_dict[modality].to(device)
@@ -45,7 +48,13 @@ def validation_step(model_dict: Dict[ModalityType, Module],
                 loss_dict[modality].append(criterion(output, y).item())
                 tqdm_dict[SubsetType.VAL, modality, MetricType.LOSS] = loss_dict[modality][-1]
 
-                _, predicted = output.max(1)
+                if config_dict["network"] == NetworkType.DETECTOR:
+                    predicted = torch.round(sigmoid(output)).detach()
+                elif config_dict["network"] == NetworkType.CLASSIFIER:
+                    _, predicted = output.max(1)
+                else:
+                    raise ValueError("unknown modality: {}".format(config_dict["network"]))
+
                 correct_dict[modality] += predicted.eq(y).sum().item()
                 predictions_dict[modality].append(predicted.cpu().numpy())
                 tqdm_dict[SubsetType.VAL, modality, MetricType.ACC] = correct_dict[modality] / total

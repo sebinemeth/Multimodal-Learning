@@ -146,7 +146,7 @@ def get_data_info_list(subset_type: SubsetType, config_dict: dict) -> List[dict]
                 cover_ratio = np.sum(np.logical_and(np.array(frame_indices) > begin_t,
                                                     np.array(frame_indices) < end_t)) / len(frame_indices)
 
-                if cover_ratio < config_dict["cover_ratio"]:
+                if cover_ratio < config_dict["cover_ratio"] or last_frame_idx > end_t:
                     label = 0
                 else:
                     label = 1
