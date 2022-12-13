@@ -236,8 +236,6 @@ class Inception3D(torch.nn.Module):
             activation='relu',
             use_bias=True,
             use_bn=False)
-        # TODO: remove softmax
-        # self.softmax = torch.nn.Softmax(dim=1)
 
     def forward(self, inp):
         # Preprocessing
@@ -272,8 +270,6 @@ class Inception3D(torch.nn.Module):
         out = out.squeeze(3)
         out = out.squeeze(3)
         out = out.mean(2)
-        # out_logits = out
-        # out = self.softmax(out_logits)
         return out, correlation_matrix
 
 

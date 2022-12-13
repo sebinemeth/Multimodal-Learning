@@ -16,7 +16,8 @@ def get_model(config_dict: dict, modality: ModalityType) -> Module:
     if config_dict["network"] == NetworkType.DETECTOR:
         model = generate_resnet_model(model_depth=10,
                                       modality=modality,
-                                      output_shape=1).to(config_dict["device"])
+                                      output_shape=1,
+                                      dropout_prob=config_dict["dropout_prob"]).to(config_dict["device"])
     elif config_dict["network"] == NetworkType.CLASSIFIER:
         model = Inception3D(num_classes=config_dict["num_of_classes"],
                             modality=modality,
@@ -39,8 +40,7 @@ def get_models(config_dict) -> Tuple[Dict[ModalityType, Module], Dict[ModalityTy
             try:
                 checkpoint = torch.load(config_dict[path_map_dict[modality]])
                 model.load_state_dict(checkpoint['model_state_dict'])
-                if config_dict["network"] == NetworkType.CLASSIFIER:
-                    model.dropout.p = config_dict["dropout_prob"]
+                model.dropout.p = config_dict["dropout_prob"]
                 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             except Exception as e:
                 write_log("init",

@@ -103,6 +103,7 @@ class ResNet(nn.Module):
                  layers: list,
                  modality: ModalityType,
                  output_shape: int,
+                 dropout_prob: float,
                  conv1_t_size: int = 7,
                  conv1_t_stride: int = 1,
                  no_max_pool: bool = False,
@@ -151,6 +152,7 @@ class ResNet(nn.Module):
                                        stride=2)
 
         self.avgpool = nn.AdaptiveAvgPool3d((1, 1, 1))
+        self.dropout = torch.nn.Dropout(dropout_prob)
         self.fc = nn.Linear(block_inplanes[3] * block.expansion, output_shape)
 
         for m in self.modules():
@@ -221,27 +223,31 @@ class ResNet(nn.Module):
         x = self.avgpool(x)
 
         x = x.view(x.size(0), -1)
+        x = self.dropout(x)
         x = self.fc(x)
         return x, correlation_matrix
 
 
-def generate_resnet_model(model_depth: int, modality: ModalityType, output_shape: int) -> nn.Module:
+def generate_resnet_model(model_depth: int,
+                          modality: ModalityType,
+                          output_shape: int,
+                          dropout_prob: float) -> nn.Module:
     supported_depth_list = (10, 18, 34, 50, 101, 152, 200)
 
     if model_depth == 10:
-        model = ResNet(BasicBlock, [1, 1, 1, 1], modality, output_shape)
+        model = ResNet(BasicBlock, [1, 1, 1, 1], modality, output_shape, dropout_prob)
     elif model_depth == 18:
-        model = ResNet(BasicBlock, [2, 2, 2, 2], modality, output_shape)
+        model = ResNet(BasicBlock, [2, 2, 2, 2], modality, output_shape, dropout_prob)
     elif model_depth == 34:
-        model = ResNet(BasicBlock, [3, 4, 6, 3], modality, output_shape)
+        model = ResNet(BasicBlock, [3, 4, 6, 3], modality, output_shape, dropout_prob)
     elif model_depth == 50:
-        model = ResNet(Bottleneck, [3, 4, 6, 3], modality, output_shape)
+        model = ResNet(Bottleneck, [3, 4, 6, 3], modality, output_shape, dropout_prob)
     elif model_depth == 101:
-        model = ResNet(Bottleneck, [3, 4, 23, 3], modality, output_shape)
+        model = ResNet(Bottleneck, [3, 4, 23, 3], modality, output_shape, dropout_prob)
     elif model_depth == 152:
-        model = ResNet(Bottleneck, [3, 8, 36, 3], modality, output_shape)
+        model = ResNet(Bottleneck, [3, 8, 36, 3], modality, output_shape, dropout_prob)
     elif model_depth == 200:
-        model = ResNet(Bottleneck, [3, 24, 36, 3], modality, output_shape)
+        model = ResNet(Bottleneck, [3, 24, 36, 3], modality, output_shape, dropout_prob)
     else:
         raise ValueError("given model depth {} is  not supported {}".format(model_depth, supported_depth_list))
 
