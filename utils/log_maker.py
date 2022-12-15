@@ -61,7 +61,7 @@ def write_log(file_name, log_message, title: str = None, blank_line: bool = True
         print(colored(log_message, color=color))
 
     if log_maker is None:
-        print(colored("LogMaker is inactive", color="red"))
+        print(colored("LogMaker is inactive ({})".format(log_message), color="red"))
         return
 
     log_id = log_maker.get_log_id()

@@ -21,8 +21,9 @@ if __name__ == '__main__':
         # "rgb_ckp_model_path": "/Users/sebinemeth/Multimodal-Learning/models/rgb_cnn.pt",
         "dataset_path": "./datasets/nvGesture",
         "val_annotation_path": "./datasets/nvGesture/nvgesture_test_correct_cvpr2016_v2.lst",
-        "rgb_ckp_model_path": "./training_outputs/multimodal_after_unimod_1/2022-12-05T12:01/model/RGB_end.pt",
-        "network": NetworkType.CLASSIFIER,
+        #"rgb_ckp_model_path": "./training_outputs/multimodal_after_unimod_1/2022-12-05T12:01/model/RGB_end.pt",
+        "rgb_ckp_model_path": "./training_outputs/multimodal_detector_16/2022-12-13T19:35/model/RGB_best.pt",
+        "network": NetworkType.DETECTOR,
         "modalities": [ModalityType.RGB],
         "img_x": 224,
         "img_y": 224,
@@ -107,7 +108,8 @@ if __name__ == '__main__':
 
         tq.close()
 
-    predictions = np.concatenate(predictions_dict[ModalityType.RGB], axis=0)
+    assert len(modalities) == 1
+    predictions = np.concatenate(predictions_dict[modalities[0]], axis=0)
     y_test = np.concatenate(y_test, axis=0)
     frame_indices = np.concatenate(frame_idx_list, axis=0)
     path_list = sum(path_list, [])
@@ -119,6 +121,6 @@ if __name__ == '__main__':
         "path_list": path_list
     }
 
-    with open('./infer_data.json', 'w') as f:
+    with open('./infer_data_{}.json'.format(config_dict["network"].name), 'w') as f:
         json.dump(data, f)
 
