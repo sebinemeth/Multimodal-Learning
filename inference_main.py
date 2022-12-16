@@ -67,10 +67,12 @@ if __name__ == '__main__':
 
     with torch.no_grad():
         predictions_dict = dict()
+        probability_dict = dict()
         correct_dict = dict()
         for modality in modalities:
             model_dict[modality].eval()
             predictions_dict[modality] = list()
+            probability_dict[modality] = list()
             correct_dict[modality] = 0
 
         y_test = list()
@@ -93,14 +95,16 @@ if __name__ == '__main__':
                 output, _ = model_dict[modality](data_dict[modality])
 
                 if config_dict["network"] == NetworkType.DETECTOR:
-                    predicted = torch.round(sigmoid(output))
+                    probability = sigmoid(output)
+                    predicted = torch.round(probability)
                 elif config_dict["network"] == NetworkType.CLASSIFIER:
-                    _, predicted = output.max(1)
+                    probability, predicted = output.max(1)
                 else:
                     raise ValueError("unknown modality: {}".format(config_dict["network"]))
 
                 correct_dict[modality] += predicted.eq(y).sum().item()
                 predictions_dict[modality].append(predicted.cpu().numpy())
+                probability_dict[modality].append(probability.cpu().numpy())
                 tqdm_dict[SubsetType.VAL, modality, MetricType.ACC] = correct_dict[modality] / total
 
             tq.update(1)
@@ -110,12 +114,14 @@ if __name__ == '__main__':
 
     assert len(modalities) == 1
     predictions = np.concatenate(predictions_dict[modalities[0]], axis=0)
+    probabilities = np.concatenate(probability_dict[modalities[0]], axis=0)
     y_test = np.concatenate(y_test, axis=0)
     frame_indices = np.concatenate(frame_idx_list, axis=0)
     path_list = sum(path_list, [])
 
     data = {
         "predictions": predictions.tolist(),
+        "probabilities": probabilities.tolist(),
         "y_test": y_test.tolist(),
         "frame_indices": frame_indices.tolist(),
         "path_list": path_list
