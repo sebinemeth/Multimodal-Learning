@@ -2,7 +2,7 @@ import warnings
 import json
 import torch
 from torch.utils.data import DataLoader
-from torch.nn.functional import sigmoid
+from torch.nn.functional import sigmoid, softmax
 from tqdm import tqdm
 import numpy as np
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
                     probability = sigmoid(output)
                     predicted = torch.round(probability)
                 elif config_dict["network"] == NetworkType.CLASSIFIER:
-                    probability, predicted = output.max(1)
+                    probability, predicted = softmax(output).max(1)
                 else:
                     raise ValueError("unknown modality: {}".format(config_dict["network"]))
 

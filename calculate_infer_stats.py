@@ -49,9 +49,11 @@ def read_infer_json(json_path):
         json_data = json.load(f)
 
     predictions = json_data["predictions"]
+    probabilities = json_data["probabilities"]
     y_test = json_data["y_test"]
     frame_indices = json_data["frame_indices"]
     path_list = json_data["path_list"]
+    breakpoint()
 
     data = dict()
 
@@ -72,7 +74,7 @@ def get_accuracy(_data, hit_rate_threshold, disp=False):
     return hits.sum() / len(_data.keys())
 
 
-classifier_data = read_infer_json("./infer_data_CLASSIFIER.json")
+# classifier_data = read_infer_json("./infer_data_CLASSIFIER.json")
 detector_data = read_infer_json("./infer_data_DETECTOR.json")
 
 # for path, (pred, y) in detector_data:
